@@ -2,6 +2,11 @@
 
 set -e
 
+NP=4
+if [[ "$CI" == "true" ]]; then
+    NP=1
+fi
+
 export CARGO_TARGET_DIR="/tmp/msgpass"
 
 EXAMPLES="/tmp/msgpass/debug/examples"
@@ -12,5 +17,5 @@ for test in examples/test_*.rs; do
     filename="$(basename "$test")"
     filekey="${filename%%.*}"
     cargo build --example $filekey
-    mpirun -np 4 $EXAMPLES/$filekey
+    mpirun -np $NP $EXAMPLES/$filekey
 done
