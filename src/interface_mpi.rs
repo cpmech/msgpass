@@ -35,6 +35,7 @@ mod tests {
 
     #[test]
     fn essential_functions_work() {
+        assert!(!mpi_initialized());
         mpi_init();
         assert!(mpi_initialized());
         mpi_finalize();
