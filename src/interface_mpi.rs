@@ -36,11 +36,11 @@ pub fn mpi_init() -> Result<(), StrError> {
 pub fn mpi_init_threaded() -> Result<(), StrError> {
     unsafe {
         let status = c_mpi_init_threaded();
+        if status == C_MPI_ERROR_INIT_THREADED {
+            return Err("MPI failed to initialize a multithreaded setup");
+        }
         if status != C_MPI_SUCCESS {
             return Err("MPI failed to initialize (threaded)");
-        }
-        if status != C_MPI_ERROR_INIT_THREADED {
-            return Err("MPI failed to initialize a multithreaded setup");
         }
     }
     Ok(())
