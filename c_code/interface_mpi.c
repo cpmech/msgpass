@@ -82,7 +82,7 @@ struct ExtCommunicator *comm_new() {
     return comm;
 }
 
-struct ExtCommunicator *comm_new_subset(int32_t n_ranks, int32_t const *ranks) {
+struct ExtCommunicator *comm_new_subset(int32_t n_rank, int32_t const *ranks) {
     struct ExtCommunicator *comm = (struct ExtCommunicator *)malloc(sizeof(struct ExtCommunicator));
     if (comm == NULL) {
         return NULL;
@@ -95,7 +95,7 @@ struct ExtCommunicator *comm_new_subset(int32_t n_ranks, int32_t const *ranks) {
         return NULL;
     }
 
-    status = MPI_Group_incl(world_group, n_ranks, ranks, &comm->group); // produces a group by reordering an existing group and taking only listed members
+    status = MPI_Group_incl(world_group, n_rank, ranks, &comm->group); // produces a group by reordering an existing group and taking only listed members
     if (status != MPI_SUCCESS) {
         free(comm);
         return NULL;
@@ -127,7 +127,7 @@ int32_t comm_abort(struct ExtCommunicator *comm, int32_t error_code) {
     return status;
 }
 
-int32_t comm_bcast_i32(struct ExtCommunicator *comm, int32_t sender, int32_t n, int32_t *array) {
-    int status = MPI_Bcast(array, n, MPI_INT32_T, sender, comm->handle); // broadcasts a message from the process with rank root to all other processes of the group
+int32_t comm_broadcast_i32(struct ExtCommunicator *comm, int32_t sender, int32_t n, int32_t *x) {
+    int status = MPI_Bcast(x, n, MPI_INT32_T, sender, comm->handle); // broadcasts a message from the process with rank root to all other processes of the group
     return status;
 }

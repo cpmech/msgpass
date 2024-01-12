@@ -2,5 +2,6 @@
 pub type StrError = &'static str;
 
 mod constants;
+mod conversion;
 mod interface_mpi;
 pub use crate::interface_mpi::*;
