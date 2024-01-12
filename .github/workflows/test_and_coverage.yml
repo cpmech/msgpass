@@ -19,6 +19,8 @@ jobs:
           cargo llvm-cov --all-features --workspace --ignore-filename-regex build.rs --lcov --output-path lcov.info
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: lcov.info
           fail_ci_if_error: true
