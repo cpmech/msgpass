@@ -16,6 +16,11 @@ rm -rf $EXAMPLES
 for test in examples/test_*.rs; do
     filename="$(basename "$test")"
     filekey="${filename%%.*}"
+
+    echo
+    echo
+    echo "### $filekey ######################################################"
+
     cargo build --example $filekey
     mpirun -np $NP $EXAMPLES/$filekey
 done
