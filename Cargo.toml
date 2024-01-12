@@ -2,6 +2,14 @@
 name = "msgpass"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "Rust thin wrapper to a Message Passing Interface (MPI)"
+homepage = "https://github.com/cpmech/msgpass"
+repository = "https://github.com/cpmech/msgpass"
+documentation = "https://docs.rs/msgpass"
+readme = "README.md"
+categories = ["science"]
+keywords = ["parallel", "cluster", "MPI"]
 
 [dependencies]
 
