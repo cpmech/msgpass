@@ -44,8 +44,6 @@ int32_t c_mpi_world_size(int32_t *size) {
 struct ExtCommunicator {
     MPI_Comm handle;
     MPI_Group group;
-    int rank;
-    int size;
 };
 
 void comm_drop(struct ExtCommunicator *comm) {
@@ -62,18 +60,6 @@ struct ExtCommunicator *comm_new() {
 
     comm->handle = MPI_COMM_WORLD;
     int status = MPI_Comm_group(MPI_COMM_WORLD, &comm->group); // returns the group associated with a communicator
-    if (status != MPI_SUCCESS) {
-        free(comm);
-        return NULL;
-    }
-
-    status = MPI_Comm_rank(comm->handle, &comm->rank); // determines the rank of the calling process in the communicator
-    if (status != MPI_SUCCESS) {
-        free(comm);
-        return NULL;
-    }
-
-    status = MPI_Comm_size(comm->handle, &comm->size); // returns the size of the group associated with a communicator
     if (status != MPI_SUCCESS) {
         free(comm);
         return NULL;
@@ -102,18 +88,6 @@ struct ExtCommunicator *comm_new_subset(int32_t n_rank, int32_t const *ranks) {
     }
 
     status = MPI_Comm_create(MPI_COMM_WORLD, comm->group, &comm->handle); // creates a new communicator
-    if (status != MPI_SUCCESS) {
-        free(comm);
-        return NULL;
-    }
-
-    status = MPI_Comm_rank(comm->handle, &comm->rank); // determines the rank of the calling process in the communicator
-    if (status != MPI_SUCCESS) {
-        free(comm);
-        return NULL;
-    }
-
-    status = MPI_Comm_size(comm->handle, &comm->size); // returns the size of the group associated with a communicator
     if (status != MPI_SUCCESS) {
         free(comm);
         return NULL;
