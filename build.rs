@@ -3,4 +3,6 @@ fn main() {
         .file("c_code/interface_mpi.c")
         .include("/usr/lib/x86_64-linux-gnu/openmpi/include/")
         .compile("c_code_interface_mpi");
+    println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu/openmpi");
+    println!("cargo:rustc-link-lib=dylib=mpi");
 }
