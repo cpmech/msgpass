@@ -1,4 +1,4 @@
-# Rust thin wrapper to a Message Passing Interface (MPI)
+# Thin wrapper to a Message Passing Interface (MPI)
 
 ## Requirements
 
