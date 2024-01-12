@@ -15,3 +15,15 @@ int c_mpi_initialized() {
     MPI_Initialized(&flag);
     return flag;
 }
+
+int c_mpi_world_rank() {
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    return rank;
+}
+
+int c_mpi_world_size() {
+    int size;
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    return size;
+}

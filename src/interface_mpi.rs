@@ -2,6 +2,8 @@ extern "C" {
     fn c_mpi_initialized() -> i32;
     fn c_mpi_init();
     fn c_mpi_finalize();
+    fn c_mpi_world_rank() -> i32;
+    fn c_mpi_world_size() -> i32;
 }
 
 pub fn mpi_init() {
@@ -27,17 +29,27 @@ pub fn mpi_initialized() -> bool {
     }
 }
 
+pub fn mpi_world_rank() -> usize {
+    unsafe { c_mpi_world_rank() as usize }
+}
+
+pub fn mpi_world_size() -> usize {
+    unsafe { c_mpi_world_size() as usize }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
 mod tests {
-    use super::{mpi_finalize, mpi_init, mpi_initialized};
+    use super::*;
 
     #[test]
     fn essential_functions_work() {
         assert!(!mpi_initialized());
         mpi_init();
         assert!(mpi_initialized());
+        assert_eq!(mpi_world_rank(), 0);
+        assert_eq!(mpi_world_size(), 1);
         mpi_finalize();
     }
 }
