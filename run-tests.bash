@@ -12,6 +12,7 @@ export CARGO_TARGET_DIR="/tmp/msgpass"
 EXAMPLES="/tmp/msgpass/debug/examples"
 
 rm -rf $EXAMPLES
+cargo build --examples
 
 for test in examples/test_*.rs; do
     filename="$(basename "$test")"
@@ -21,6 +22,5 @@ for test in examples/test_*.rs; do
     echo
     echo "### $filekey ######################################################"
 
-    cargo build --example $filekey
     mpirun -np $NP $EXAMPLES/$filekey
 done
