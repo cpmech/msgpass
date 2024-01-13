@@ -1,7 +1,7 @@
-name: Test & Coverage
+name: Test on Linux
 on: [pull_request, push]
 jobs:
-  test_and_coverage:
+  test_on_linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -1,7 +1,7 @@
 name: Test on Windows
 on: [pull_request, push]
 jobs:
-  test_and_coverage:
+  test_on_windows:
     runs-on: windows-latest
     steps:
       - name: download MS-MPI setup
