@@ -6,8 +6,22 @@ We try to test all functions as much as possible, but test coverage could be bet
 
 ## Requirements
 
+On Ubuntu/Linux:
+
 ```bash
 sudo apt install libopenmpi-dev
+```
+
+Alternatively:
+
+```bash
+sudo apt install libmpich-dev
+```
+
+which requires:
+
+```bash
+export MSGPASS_USE_MPICH=1
 ```
 
 ## Examples
