@@ -3,11 +3,14 @@ on: [pull_request, push]
 jobs:
   test_on_linux:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mpi-lib: [libopenmpi-dev, libmpich-dev]
     steps:
       - uses: actions/checkout@v4
       - name: Install libraries
         run: |
-          sudo apt-get update -y && sudo apt-get install -y build-essential libopenmpi-dev
+          sudo apt-get update -y && sudo apt-get install -y build-essential ${{ matrix.mpi-lib }}
       - name: Run tests
         run: |
           bash run-tests.bash
