@@ -24,6 +24,9 @@ extern "C" {
     fn comm_broadcast(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut c_void, type_index: i32) -> i32;
     fn comm_reduce(comm: *mut ExtCommunicator, root: i32, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32, op_index: i32) -> i32;
     fn comm_allreduce(comm: *mut ExtCommunicator, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32, op_index: i32) -> i32;
+    fn comm_send(comm: *mut ExtCommunicator, n: i32, data: *const c_void, type_index: i32, to_rank: i32, tag: i32) -> i32;
+    fn comm_receive(comm: *mut ExtCommunicator, n: i32, data: *mut c_void, type_index: i32, from_rank: i32, tag: i32) -> i32;
+    fn comm_get_receive_status(comm: *mut ExtCommunicator, source: *mut i32, tag: *mut i32, error: *mut i32);
 }
 
 pub fn mpi_init() -> Result<(), StrError> {
@@ -432,6 +435,226 @@ impl Communicator {
             let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F64.n(), op.n());
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to (all) reduce f64 array");
+            }
+        }
+        Ok(())
+    }
+
+    // getters -------------------------------------------------------------------------------------------
+
+    pub fn get_receive_status(&mut self) -> (i32, i32, i32) {
+        let mut source = 0;
+        let mut tag = 0;
+        let mut error = 0;
+        unsafe {
+            comm_get_receive_status(self.handle, &mut source, &mut tag, &mut error);
+        }
+        (source, tag, error)
+    }
+
+    // send ----------------------------------------------------------------------------------------------
+
+    pub fn send_i32(&mut self, data: &[i32], to_rank: usize, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::I32.n(), to_i32(to_rank), tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to send i32 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn send_i64(&mut self, data: &[i64], to_rank: usize, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::I64.n(), to_i32(to_rank), tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to send i64 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn send_u32(&mut self, data: &[u32], to_rank: usize, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::U32.n(), to_i32(to_rank), tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to send u32 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn send_u64(&mut self, data: &[u64], to_rank: usize, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::U64.n(), to_i32(to_rank), tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to send u64 array");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    pub fn send_usize(&mut self, data: &[usize], to_rank: usize, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::U64.n(), to_i32(to_rank), tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to send usize array");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "32")]
+    pub fn send_usize(&mut self, data: &[usize], to_rank: usize, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::U32.n(), to_i32(to_rank), tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to send usize array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn send_f32(&mut self, data: &[f32], to_rank: usize, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::F32.n(), to_i32(to_rank), tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to send f32 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn send_f64(&mut self, data: &[f64], to_rank: usize, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::F64.n(), to_i32(to_rank), tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to send f64 array");
+            }
+        }
+        Ok(())
+    }
+
+    // receive -------------------------------------------------------------------------------------------
+
+    /// Receives i32 array
+    ///
+    /// `data` -- Buffer to store the received data
+    /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
+    /// `tag` -- Tag of the message (a negative value corresponds to MPI_ANY_TAG)
+    pub fn receive_i32(&mut self, data: &mut [i32], from_rank: i32, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::I32.n(), from_rank, tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to receive i32 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Receives i64 array
+    ///
+    /// `data` -- Buffer to store the received data
+    /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
+    /// `tag` -- Tag of the message (a negative value corresponds to MPI_ANY_TAG)
+    pub fn receive_i64(&mut self, data: &mut [i64], from_rank: i32, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::I64.n(), from_rank, tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to receive i64 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Receives u32 array
+    ///
+    /// `data` -- Buffer to store the received data
+    /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
+    /// `tag` -- Tag of the message (a negative value corresponds to MPI_ANY_TAG)
+    pub fn receive_u32(&mut self, data: &mut [u32], from_rank: i32, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::U32.n(), from_rank, tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to receive u32 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Receives u64 array
+    ///
+    /// `data` -- Buffer to store the received data
+    /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
+    /// `tag` -- Tag of the message (a negative value corresponds to MPI_ANY_TAG)
+    pub fn receive_u64(&mut self, data: &mut [u64], from_rank: i32, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::U64.n(), from_rank, tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to receive u64 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Receives usize array
+    ///
+    /// `data` -- Buffer to store the received data
+    /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
+    /// `tag` -- Tag of the message (a negative value corresponds to MPI_ANY_TAG)
+    #[cfg(target_pointer_width = "64")]
+    pub fn receive_usize(&mut self, data: &mut [usize], from_rank: i32, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::U64.n(), from_rank, tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to receive usize array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Receives usize array
+    ///
+    /// `data` -- Buffer to store the received data
+    /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
+    /// `tag` -- Tag of the message (a negative value corresponds to MPI_ANY_TAG)
+    #[cfg(target_pointer_width = "32")]
+    pub fn receive_usize(&mut self, data: &mut [usize], from_rank: i32, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::U32.n(), from_rank, tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to receive usize array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Receives f32 array
+    ///
+    /// `data` -- Buffer to store the received data
+    /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
+    /// `tag` -- Tag of the message (a negative value corresponds to MPI_ANY_TAG)
+    pub fn receive_f32(&mut self, data: &mut [f32], from_rank: i32, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::F32.n(), from_rank, tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to receive f32 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Receives f64 array
+    ///
+    /// `data` -- Buffer to store the received data
+    /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
+    /// `tag` -- Tag of the message (a negative value corresponds to MPI_ANY_TAG)
+    pub fn receive_f64(&mut self, data: &mut [f64], from_rank: i32, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::F64.n(), from_rank, tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to receive f64 array");
             }
         }
         Ok(())

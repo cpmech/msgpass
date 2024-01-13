@@ -44,6 +44,7 @@ int32_t c_mpi_world_size(int32_t *size) {
 struct ExtCommunicator {
     MPI_Comm handle;
     MPI_Group group;
+    MPI_Status recv_status;
 };
 
 void comm_drop(struct ExtCommunicator *comm) {
@@ -93,6 +94,10 @@ struct ExtCommunicator *comm_new_subset(int32_t n_rank, int32_t const *ranks) {
         return NULL;
     }
 
+    comm->recv_status.MPI_SOURCE = 0;
+    comm->recv_status.MPI_TAG = 0;
+    comm->recv_status.MPI_ERROR = 0;
+
     return comm;
 }
 
@@ -119,4 +124,29 @@ int32_t comm_allreduce(struct ExtCommunicator *comm, int32_t n, void *dest, void
     MPI_Op op = C_MPI_OPS[op_index];
     int status = MPI_Allreduce(orig, dest, n, dty, op, comm->handle); // combines values from all processes and distributes the result back to all processes
     return status;
+}
+
+int32_t comm_send(struct ExtCommunicator *comm, int32_t n, void *data, int32_t type_index, int32_t to_rank, int32_t tag) {
+    MPI_Datatype dty = C_MPI_TYPES[type_index];
+    int status = MPI_Send(data, n, dty, to_rank, tag, comm->handle); // performs a standard-mode blocking send
+    return status;
+}
+
+// from_rank < 0 corresponds to MPI_ANY_SOURCE
+// tag < 0 corresponds to MPI_ANY_TAG
+int32_t comm_receive(struct ExtCommunicator *comm, int32_t n, void *data, int32_t type_index, int32_t from_rank, int32_t tag) {
+    int r = from_rank < 0 ? MPI_ANY_SOURCE : from_rank;
+    int t = tag < 0 ? MPI_ANY_TAG : tag;
+    MPI_Datatype dty = C_MPI_TYPES[type_index];
+    comm->recv_status.MPI_SOURCE = r;
+    comm->recv_status.MPI_TAG = t;
+    comm->recv_status.MPI_ERROR = MPI_SUCCESS;
+    int status = MPI_Recv(data, n, dty, r, t, comm->handle, &comm->recv_status); // performs a standard-mode blocking receive
+    return status;
+}
+
+void comm_get_receive_status(struct ExtCommunicator *comm, int32_t *source, int32_t *tag, int32_t *error) {
+    *source = comm->recv_status.MPI_SOURCE;
+    *tag = comm->recv_status.MPI_TAG;
+    *error = comm->recv_status.MPI_ERROR;
 }
