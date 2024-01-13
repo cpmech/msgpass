@@ -23,6 +23,7 @@ extern "C" {
     fn comm_abort(comm: *mut ExtCommunicator) -> i32;
     fn comm_broadcast(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut c_void, type_index: i32) -> i32;
     fn comm_reduce(comm: *mut ExtCommunicator, root: i32, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32, op_index: i32) -> i32;
+    fn comm_allreduce(comm: *mut ExtCommunicator, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32, op_index: i32) -> i32;
 }
 
 pub fn mpi_init() -> Result<(), StrError> {
@@ -224,7 +225,7 @@ impl Communicator {
 
     pub fn reduce_i32(&mut self, root: usize, dest: &mut [i32], orig: &[i32], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
-            return Err("array must have the same size");
+            return Err("arrays must have the same size");
         }
         unsafe {
             let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::I32.n(), op.n());
@@ -237,7 +238,7 @@ impl Communicator {
 
     pub fn reduce_i64(&mut self, root: usize, dest: &mut [i64], orig: &[i64], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
-            return Err("array must have the same size");
+            return Err("arrays must have the same size");
         }
         unsafe {
             let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::I64.n(), op.n());
@@ -250,7 +251,7 @@ impl Communicator {
 
     pub fn reduce_u32(&mut self, root: usize, dest: &mut [u32], orig: &[u32], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
-            return Err("array must have the same size");
+            return Err("arrays must have the same size");
         }
         unsafe {
             let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n(), op.n());
@@ -263,7 +264,7 @@ impl Communicator {
 
     pub fn reduce_u64(&mut self, root: usize, dest: &mut [u64], orig: &[u64], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
-            return Err("array must have the same size");
+            return Err("arrays must have the same size");
         }
         unsafe {
             let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n(), op.n());
@@ -277,7 +278,7 @@ impl Communicator {
     #[cfg(target_pointer_width = "64")]
     pub fn reduce_usize(&mut self, root: usize, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
-            return Err("array must have the same size");
+            return Err("arrays must have the same size");
         }
         unsafe {
             let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n(), op.n());
@@ -291,7 +292,7 @@ impl Communicator {
     #[cfg(target_pointer_width = "32")]
     pub fn reduce_usize(&mut self, root: usize, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
-            return Err("array must have the same size");
+            return Err("arrays must have the same size");
         }
         unsafe {
             let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n(), op.n());
@@ -304,7 +305,7 @@ impl Communicator {
 
     pub fn reduce_f32(&mut self, root: usize, dest: &mut [f32], orig: &[f32], op: MpiOpx) -> Result<(), StrError> {
         if dest.len() != orig.len() {
-            return Err("array must have the same size");
+            return Err("arrays must have the same size");
         }
         unsafe {
             let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F32.n(), op.n());
@@ -317,12 +318,120 @@ impl Communicator {
 
     pub fn reduce_f64(&mut self, root: usize, dest: &mut [f64], orig: &[f64], op: MpiOpx) -> Result<(), StrError> {
         if dest.len() != orig.len() {
-            return Err("array must have the same size");
+            return Err("arrays must have the same size");
         }
         unsafe {
             let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F64.n(), op.n());
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to reduce f64 array");
+            }
+        }
+        Ok(())
+    }
+
+    // allreduce -----------------------------------------------------------------------------------------
+
+    pub fn allreduce_i32(&mut self, dest: &mut [i32], orig: &[i32], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::I32.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to (all) reduce i32 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn allreduce_i64(&mut self, dest: &mut [i64], orig: &[i64], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::I64.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to (all) reduce i64 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn allreduce_u32(&mut self, dest: &mut [u32], orig: &[u32], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to (all) reduce u32 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn allreduce_u64(&mut self, dest: &mut [u64], orig: &[u64], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to (all) reduce u64 array");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    pub fn allreduce_usize(&mut self, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to (all) reduce usize array");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "32")]
+    pub fn allreduce_usize(&mut self, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to (all) reduce usize array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn allreduce_f32(&mut self, dest: &mut [f32], orig: &[f32], op: MpiOpx) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F32.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to (all) reduce f32 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn allreduce_f64(&mut self, dest: &mut [f64], orig: &[f64], op: MpiOpx) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F64.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to (all) reduce f64 array");
             }
         }
         Ok(())
