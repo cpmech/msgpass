@@ -11,7 +11,7 @@ export CARGO_TARGET_DIR="/tmp/msgpass"
 
 EXAMPLES="/tmp/msgpass/debug/examples"
 
-TEST="test_reduce"
+TEST="test_reduce_sum"
 
 rm -rf $EXAMPLES
 cargo build --example $TEST
