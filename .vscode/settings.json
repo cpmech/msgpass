@@ -1,6 +1,10 @@
 {
   "cSpell.words": [
+    "allreduce",
+    "Bxor",
     "libopenmpi",
+    "Lxor",
+    "msgpass",
     "openmpi"
   ]
 }

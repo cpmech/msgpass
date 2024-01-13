@@ -5,4 +5,5 @@ fn main() {
         .compile("c_code_interface_mpi");
     println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu/openmpi");
     println!("cargo:rustc-link-lib=dylib=mpi");
+    println!("cargo:rerun-if-changed=c_code/interface_mpi.c");
 }
