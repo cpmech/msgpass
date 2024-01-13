@@ -11,8 +11,8 @@ pub(crate) struct ExtCommunicator {
 }
 
 extern "C" {
+    fn c_mpi_init_single_thread() -> i32;
     fn c_mpi_init() -> i32;
-    fn c_mpi_init_threaded() -> i32;
     fn c_mpi_finalize() -> i32;
     fn c_mpi_initialized(flag: *mut i32) -> i32;
     fn c_mpi_world_rank(rank: *mut i32) -> i32;
@@ -30,19 +30,19 @@ extern "C" {
     fn comm_get_receive_status(comm: *mut ExtCommunicator, source: *mut i32, tag: *mut i32, error: *mut i32);
 }
 
-pub fn mpi_init() -> Result<(), StrError> {
+pub fn mpi_init_single_thread() -> Result<(), StrError> {
     unsafe {
-        let status = c_mpi_init();
+        let status = c_mpi_init_single_thread();
         if status != C_MPI_SUCCESS {
-            return Err("MPI failed to initialize");
+            return Err("MPI failed to initialize (single-thread)");
         }
     }
     Ok(())
 }
 
-pub fn mpi_init_threaded() -> Result<(), StrError> {
+pub fn mpi_init() -> Result<(), StrError> {
     unsafe {
-        let status = c_mpi_init_threaded();
+        let status = c_mpi_init();
         if status == C_MPI_ERROR_INIT_THREADED {
             return Err("MPI failed to initialize a multithreaded setup");
         }
