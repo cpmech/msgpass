@@ -4,6 +4,7 @@
     "Bxor",
     "libopenmpi",
     "Lxor",
+    "mpiexec",
     "msgpass",
     "openmpi"
   ]

@@ -2,7 +2,7 @@
 
 MsgPass (Message Passing) is a thin Rust wrapper to OpenMPI. We consider a small subset of MPI functions. This subset will grow as our projects require more functionality. We implement (by hand) C functions that Rust can easily call using the FFI (in the `c_code` directory).
 
-We try to test all functions as much as possible, but test coverage could be better. The tests must be called with `mpirun`, thus it is easy to use the `run-tests.bash` script.
+We try to test all functions as much as possible, but test coverage could be better. The tests must be called with `mpiexec`, thus it is easy to use the `run-tests.bash` script.
 
 ## Requirements
 
@@ -43,7 +43,7 @@ fn main() -> Result<(), StrError> {
 }
 ```
 
-Running the code above with `mpirun -np 4 ex_send_receive` (see `run-examples.bash`), we get an output similar to the one below:
+Running the code above with `mpiexec -np 4 ex_send_receive` (see `run-examples.bash`), we get an output similar to the one below:
 
 ```text
 ### ex_send_receive ######################################################

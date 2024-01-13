@@ -18,5 +18,5 @@ for example in examples/ex_*.rs; do
     echo
     echo "### $filekey ######################################################"
 
-    mpirun -np $NP $EXAMPLES/$filekey
+    mpiexec -np $NP $EXAMPLES/$filekey
 done

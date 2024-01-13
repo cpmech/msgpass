@@ -21,5 +21,5 @@ for test in examples/test_*.rs; do
     echo
     echo "### $filekey ######################################################"
 
-    mpirun -np $NP $EXAMPLES/$filekey
+    mpiexec -np $NP $EXAMPLES/$filekey
 done
