@@ -101,34 +101,15 @@ int32_t comm_abort(struct ExtCommunicator *comm, int32_t error_code) {
     return status;
 }
 
-// broadcast --------------------------------------------------------------------------------------------
-
-int32_t comm_broadcast_i32(struct ExtCommunicator *comm, int32_t sender, int32_t n, int32_t *x) {
-    int status = MPI_Bcast(x, n, MPI_INT32_T, sender, comm->handle); // broadcasts a message from the process with rank root to all other processes of the group
+int32_t comm_broadcast(struct ExtCommunicator *comm, int32_t sender, int32_t n, void *x, int32_t type_index) {
+    MPI_Datatype dty = C_MPI_TYPES[type_index];
+    int status = MPI_Bcast(x, n, dty, sender, comm->handle); // broadcasts a message from the process with rank root to all other processes of the group
     return status;
 }
 
-int32_t comm_broadcast_i64(struct ExtCommunicator *comm, int32_t sender, int32_t n, int64_t *x) {
-    int status = MPI_Bcast(x, n, MPI_INT64_T, sender, comm->handle); // broadcasts a message from the process with rank root to all other processes of the group
-    return status;
-}
-
-int32_t comm_broadcast_u32(struct ExtCommunicator *comm, int32_t sender, int32_t n, uint32_t *x) {
-    int status = MPI_Bcast(x, n, MPI_UINT32_T, sender, comm->handle); // broadcasts a message from the process with rank root to all other processes of the group
-    return status;
-}
-
-int32_t comm_broadcast_u64(struct ExtCommunicator *comm, int32_t sender, int32_t n, uint64_t *x) {
-    int status = MPI_Bcast(x, n, MPI_UINT64_T, sender, comm->handle); // broadcasts a message from the process with rank root to all other processes of the group
-    return status;
-}
-
-int32_t comm_broadcast_f32(struct ExtCommunicator *comm, int32_t sender, int32_t n, float *x) {
-    int status = MPI_Bcast(x, n, MPI_FLOAT, sender, comm->handle); // broadcasts a message from the process with rank root to all other processes of the group
-    return status;
-}
-
-int32_t comm_broadcast_f64(struct ExtCommunicator *comm, int32_t sender, int32_t n, double *x) {
-    int status = MPI_Bcast(x, n, MPI_DOUBLE, sender, comm->handle); // broadcasts a message from the process with rank root to all other processes of the group
+int32_t comm_reduce(struct ExtCommunicator *comm, int32_t root, int32_t n, void *dest, void const *orig, int32_t type_index, int32_t op_index) {
+    MPI_Datatype dty = C_MPI_TYPES[type_index];
+    MPI_Op op = C_MPI_OPS[op_index];
+    int status = MPI_Reduce(orig, dest, n, dty, op, root, comm->handle); // reduces values on all processes within a group
     return status;
 }

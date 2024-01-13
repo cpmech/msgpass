@@ -1,6 +1,8 @@
 use crate::constants::*;
 use crate::conversion::to_i32;
+use crate::enums::*;
 use crate::StrError;
+use std::ffi::c_void;
 
 #[repr(C)]
 pub(crate) struct ExtCommunicator {
@@ -19,15 +21,8 @@ extern "C" {
     fn comm_new() -> *mut ExtCommunicator;
     fn comm_new_subset(n_rank: i32, ranks: *const i32) -> *mut ExtCommunicator;
     fn comm_abort(comm: *mut ExtCommunicator) -> i32;
-
-    // broadcast -----------------------------------------------------------------------------
-
-    fn comm_broadcast_i32(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut i32) -> i32;
-    fn comm_broadcast_i64(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut i64) -> i32;
-    fn comm_broadcast_u32(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut u32) -> i32;
-    fn comm_broadcast_u64(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut u64) -> i32;
-    fn comm_broadcast_f32(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut f32) -> i32;
-    fn comm_broadcast_f64(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut f64) -> i32;
+    fn comm_broadcast(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut c_void, type_index: i32) -> i32;
+    fn comm_reduce(comm: *mut ExtCommunicator, root: i32, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32, op_index: i32) -> i32;
 }
 
 pub fn mpi_init() -> Result<(), StrError> {
@@ -97,13 +92,13 @@ pub fn mpi_world_size() -> Result<usize, StrError> {
 }
 
 pub struct Communicator {
-    ext_comm: *mut ExtCommunicator,
+    handle: *mut ExtCommunicator,
 }
 
 impl Drop for Communicator {
     fn drop(&mut self) {
         unsafe {
-            comm_drop(self.ext_comm);
+            comm_drop(self.handle);
         }
     }
 }
@@ -115,7 +110,7 @@ impl Communicator {
             if ext_comm.is_null() {
                 return Err("MPI failed to return the world communicator");
             }
-            Ok(Communicator { ext_comm })
+            Ok(Communicator { handle: ext_comm })
         }
     }
 
@@ -127,13 +122,13 @@ impl Communicator {
             if ext_comm.is_null() {
                 return Err("MPI failed to create subset communicator");
             }
-            Ok(Communicator { ext_comm })
+            Ok(Communicator { handle: ext_comm })
         }
     }
 
     pub fn abort(&mut self) -> Result<(), StrError> {
         unsafe {
-            let status = comm_abort(self.ext_comm);
+            let status = comm_abort(self.handle);
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to abort");
             }
@@ -144,60 +139,40 @@ impl Communicator {
     //  broadcast --------------------------------------------------------------------------------------
 
     pub fn broadcast_i32(&mut self, sender: usize, x: &mut [i32]) -> Result<(), StrError> {
-        if x.len() < 1 {
-            return Err("slice must have at least one component");
-        }
         unsafe {
-            let c_sender = to_i32(sender);
-            let n = to_i32(x.len());
-            let status = comm_broadcast_i32(self.ext_comm, c_sender, n, x.as_mut_ptr());
+            let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::I32.n());
             if status != C_MPI_SUCCESS {
-                return Err("MPI failed to broadcast i32 slice");
+                return Err("MPI failed to broadcast i32 array");
             }
         }
         Ok(())
     }
 
     pub fn broadcast_i64(&mut self, sender: usize, x: &mut [i64]) -> Result<(), StrError> {
-        if x.len() < 1 {
-            return Err("slice must have at least one component");
-        }
         unsafe {
-            let c_sender = to_i32(sender);
-            let n = to_i32(x.len());
-            let status = comm_broadcast_i64(self.ext_comm, c_sender, n, x.as_mut_ptr());
+            let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::I64.n());
             if status != C_MPI_SUCCESS {
-                return Err("MPI failed to broadcast i64 slice");
+                return Err("MPI failed to broadcast i64 array");
             }
         }
         Ok(())
     }
 
     pub fn broadcast_u32(&mut self, sender: usize, x: &mut [u32]) -> Result<(), StrError> {
-        if x.len() < 1 {
-            return Err("slice must have at least one component");
-        }
         unsafe {
-            let c_sender = to_i32(sender);
-            let n = to_i32(x.len());
-            let status = comm_broadcast_u32(self.ext_comm, c_sender, n, x.as_mut_ptr());
+            let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::U32.n());
             if status != C_MPI_SUCCESS {
-                return Err("MPI failed to broadcast u32 slice");
+                return Err("MPI failed to broadcast u32 array");
             }
         }
         Ok(())
     }
 
     pub fn broadcast_u64(&mut self, sender: usize, x: &mut [u64]) -> Result<(), StrError> {
-        if x.len() < 1 {
-            return Err("slice must have at least one component");
-        }
         unsafe {
-            let c_sender = to_i32(sender);
-            let n = to_i32(x.len());
-            let status = comm_broadcast_u64(self.ext_comm, c_sender, n, x.as_mut_ptr());
+            let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::U64.n());
             if status != C_MPI_SUCCESS {
-                return Err("MPI failed to broadcast u64 slice");
+                return Err("MPI failed to broadcast u64 array");
             }
         }
         Ok(())
@@ -205,15 +180,10 @@ impl Communicator {
 
     #[cfg(target_pointer_width = "64")]
     pub fn broadcast_usize(&mut self, sender: usize, x: &mut [usize]) -> Result<(), StrError> {
-        if x.len() < 1 {
-            return Err("slice must have at least one component");
-        }
         unsafe {
-            let c_sender = to_i32(sender);
-            let n = to_i32(x.len());
-            let status = comm_broadcast_u64(self.ext_comm, c_sender, n, x.as_mut_ptr() as *mut u64);
+            let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::U64.n());
             if status != C_MPI_SUCCESS {
-                return Err("MPI failed to broadcast u64 slice");
+                return Err("MPI failed to broadcast usize array");
             }
         }
         Ok(())
@@ -221,49 +191,140 @@ impl Communicator {
 
     #[cfg(target_pointer_width = "32")]
     pub fn broadcast_usize(&mut self, sender: usize, x: &mut [usize]) -> Result<(), StrError> {
-        if x.len() < 1 {
-            return Err("slice must have at least one component");
-        }
         unsafe {
-            let c_sender = to_i32(sender);
-            let n = to_i32(x.len());
-            let status = comm_broadcast_u32(self.ext_comm, c_sender, n, x.as_mut_ptr() as *mut u32);
+            let status = comm_broadcast(self.ext_comm, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::U32.n());
             if status != C_MPI_SUCCESS {
-                return Err("MPI failed to broadcast u64 slice");
+                return Err("MPI failed to broadcast usize array");
             }
         }
         Ok(())
     }
 
     pub fn broadcast_f32(&mut self, sender: usize, x: &mut [f32]) -> Result<(), StrError> {
-        if x.len() < 1 {
-            return Err("slice must have at least one component");
-        }
         unsafe {
-            let c_sender = to_i32(sender);
-            let n = to_i32(x.len());
-            let status = comm_broadcast_f32(self.ext_comm, c_sender, n, x.as_mut_ptr());
+            let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::F32.n());
             if status != C_MPI_SUCCESS {
-                return Err("MPI failed to broadcast f32 slice");
+                return Err("MPI failed to broadcast f32 array");
             }
         }
         Ok(())
     }
 
     pub fn broadcast_f64(&mut self, sender: usize, x: &mut [f64]) -> Result<(), StrError> {
-        if x.len() < 1 {
-            return Err("slice must have at least one component");
-        }
         unsafe {
-            let c_sender = to_i32(sender);
-            let n = to_i32(x.len());
-            let status = comm_broadcast_f64(self.ext_comm, c_sender, n, x.as_mut_ptr());
+            let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::F64.n());
             if status != C_MPI_SUCCESS {
-                return Err("MPI failed to broadcast f64 slice");
+                return Err("MPI failed to broadcast f64 array");
             }
         }
         Ok(())
     }
 
-    //  send -------------------------------------------------------------------------------------------
+    // reduce -----------------------------------------------------------------------------------------
+
+    pub fn reduce_i32(&mut self, root: usize, dest: &mut [i32], orig: &[i32], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("array must have the same size");
+        }
+        unsafe {
+            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::I32.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to reduce i32 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn reduce_i64(&mut self, root: usize, dest: &mut [i64], orig: &[i64], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("array must have the same size");
+        }
+        unsafe {
+            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::I64.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to reduce i64 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn reduce_u32(&mut self, root: usize, dest: &mut [u32], orig: &[u32], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("array must have the same size");
+        }
+        unsafe {
+            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to reduce u32 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn reduce_u64(&mut self, root: usize, dest: &mut [u64], orig: &[u64], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("array must have the same size");
+        }
+        unsafe {
+            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to reduce u64 array");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    pub fn reduce_usize(&mut self, root: usize, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("array must have the same size");
+        }
+        unsafe {
+            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to reduce usize array");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "32")]
+    pub fn reduce_usize(&mut self, root: usize, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("array must have the same size");
+        }
+        unsafe {
+            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to reduce usize array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn reduce_f32(&mut self, root: usize, dest: &mut [f32], orig: &[f32], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("array must have the same size");
+        }
+        unsafe {
+            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F32.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to reduce f32 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn reduce_f64(&mut self, root: usize, dest: &mut [f64], orig: &[f64], op: MpiOp) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("array must have the same size");
+        }
+        unsafe {
+            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F64.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to reduce f64 array");
+            }
+        }
+        Ok(())
+    }
 }
