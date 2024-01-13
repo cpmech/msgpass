@@ -113,3 +113,10 @@ int32_t comm_reduce(struct ExtCommunicator *comm, int32_t root, int32_t n, void 
     int status = MPI_Reduce(orig, dest, n, dty, op, root, comm->handle); // reduces values on all processes within a group
     return status;
 }
+
+int32_t comm_allreduce(struct ExtCommunicator *comm, int32_t n, void *dest, void const *orig, int32_t type_index, int32_t op_index) {
+    MPI_Datatype dty = C_MPI_TYPES[type_index];
+    MPI_Op op = C_MPI_OPS[op_index];
+    int status = MPI_Allreduce(orig, dest, n, dty, op, comm->handle); // combines values from all processes and distributes the result back to all processes
+    return status;
+}
