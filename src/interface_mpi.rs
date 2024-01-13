@@ -19,8 +19,15 @@ extern "C" {
     fn comm_new() -> *mut ExtCommunicator;
     fn comm_new_subset(n_rank: i32, ranks: *const i32) -> *mut ExtCommunicator;
     fn comm_abort(comm: *mut ExtCommunicator) -> i32;
-    fn comm_broadcast_i32(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut i32) -> i32;
 
+    // broadcast -----------------------------------------------------------------------------
+
+    fn comm_broadcast_i32(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut i32) -> i32;
+    fn comm_broadcast_i64(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut i64) -> i32;
+    fn comm_broadcast_u32(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut u32) -> i32;
+    fn comm_broadcast_u64(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut u64) -> i32;
+    fn comm_broadcast_f32(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut f32) -> i32;
+    fn comm_broadcast_f64(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut f64) -> i32;
 }
 
 pub fn mpi_init() -> Result<(), StrError> {
@@ -134,7 +141,12 @@ impl Communicator {
         Ok(())
     }
 
+    //  broadcast --------------------------------------------------------------------------------------
+
     pub fn broadcast_i32(&mut self, sender: usize, x: &mut [i32]) -> Result<(), StrError> {
+        if x.len() < 1 {
+            return Err("slice must have at least one component");
+        }
         unsafe {
             let c_sender = to_i32(sender);
             let n = to_i32(x.len());
@@ -145,4 +157,113 @@ impl Communicator {
         }
         Ok(())
     }
+
+    pub fn broadcast_i64(&mut self, sender: usize, x: &mut [i64]) -> Result<(), StrError> {
+        if x.len() < 1 {
+            return Err("slice must have at least one component");
+        }
+        unsafe {
+            let c_sender = to_i32(sender);
+            let n = to_i32(x.len());
+            let status = comm_broadcast_i64(self.ext_comm, c_sender, n, x.as_mut_ptr());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to broadcast i64 slice");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn broadcast_u32(&mut self, sender: usize, x: &mut [u32]) -> Result<(), StrError> {
+        if x.len() < 1 {
+            return Err("slice must have at least one component");
+        }
+        unsafe {
+            let c_sender = to_i32(sender);
+            let n = to_i32(x.len());
+            let status = comm_broadcast_u32(self.ext_comm, c_sender, n, x.as_mut_ptr());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to broadcast u32 slice");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn broadcast_u64(&mut self, sender: usize, x: &mut [u64]) -> Result<(), StrError> {
+        if x.len() < 1 {
+            return Err("slice must have at least one component");
+        }
+        unsafe {
+            let c_sender = to_i32(sender);
+            let n = to_i32(x.len());
+            let status = comm_broadcast_u64(self.ext_comm, c_sender, n, x.as_mut_ptr());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to broadcast u64 slice");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    pub fn broadcast_usize(&mut self, sender: usize, x: &mut [usize]) -> Result<(), StrError> {
+        if x.len() < 1 {
+            return Err("slice must have at least one component");
+        }
+        unsafe {
+            let c_sender = to_i32(sender);
+            let n = to_i32(x.len());
+            let status = comm_broadcast_u64(self.ext_comm, c_sender, n, x.as_mut_ptr() as *mut u64);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to broadcast u64 slice");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "32")]
+    pub fn broadcast_usize(&mut self, sender: usize, x: &mut [usize]) -> Result<(), StrError> {
+        if x.len() < 1 {
+            return Err("slice must have at least one component");
+        }
+        unsafe {
+            let c_sender = to_i32(sender);
+            let n = to_i32(x.len());
+            let status = comm_broadcast_u32(self.ext_comm, c_sender, n, x.as_mut_ptr() as *mut u32);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to broadcast u64 slice");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn broadcast_f32(&mut self, sender: usize, x: &mut [f32]) -> Result<(), StrError> {
+        if x.len() < 1 {
+            return Err("slice must have at least one component");
+        }
+        unsafe {
+            let c_sender = to_i32(sender);
+            let n = to_i32(x.len());
+            let status = comm_broadcast_f32(self.ext_comm, c_sender, n, x.as_mut_ptr());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to broadcast f32 slice");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn broadcast_f64(&mut self, sender: usize, x: &mut [f64]) -> Result<(), StrError> {
+        if x.len() < 1 {
+            return Err("slice must have at least one component");
+        }
+        unsafe {
+            let c_sender = to_i32(sender);
+            let n = to_i32(x.len());
+            let status = comm_broadcast_f64(self.ext_comm, c_sender, n, x.as_mut_ptr());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to broadcast f64 slice");
+            }
+        }
+        Ok(())
+    }
+
+    //  send -------------------------------------------------------------------------------------------
 }
