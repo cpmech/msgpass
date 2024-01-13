@@ -20,7 +20,8 @@ extern "C" {
     fn comm_drop(comm: *mut ExtCommunicator);
     fn comm_new() -> *mut ExtCommunicator;
     fn comm_new_subset(n_rank: i32, ranks: *const i32) -> *mut ExtCommunicator;
-    fn comm_abort(comm: *mut ExtCommunicator) -> i32;
+    fn comm_abort(comm: *mut ExtCommunicator, error_code: i32) -> i32;
+    fn comm_barrier(comm: *mut ExtCommunicator) -> i32;
     fn comm_broadcast(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut c_void, type_index: i32) -> i32;
     fn comm_reduce(comm: *mut ExtCommunicator, root: i32, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32, op_index: i32) -> i32;
     fn comm_allreduce(comm: *mut ExtCommunicator, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32, op_index: i32) -> i32;
@@ -130,11 +131,21 @@ impl Communicator {
         }
     }
 
-    pub fn abort(&mut self) -> Result<(), StrError> {
+    pub fn abort(&mut self, error_code: i32) -> Result<(), StrError> {
         unsafe {
-            let status = comm_abort(self.handle);
+            let status = comm_abort(self.handle, error_code);
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to abort");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn barrier(&mut self) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_barrier(self.handle);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to synchronize (barrier)");
             }
         }
         Ok(())

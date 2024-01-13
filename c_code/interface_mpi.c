@@ -102,7 +102,12 @@ struct ExtCommunicator *comm_new_subset(int32_t n_rank, int32_t const *ranks) {
 }
 
 int32_t comm_abort(struct ExtCommunicator *comm, int32_t error_code) {
-    int status = MPI_Abort(comm->handle, error_code); // Terminates MPI execution environment
+    int status = MPI_Abort(comm->handle, error_code); // terminates MPI execution environment
+    return status;
+}
+
+int32_t comm_barrier(struct ExtCommunicator *comm) {
+    int status = MPI_Barrier(comm->handle); // synchronization between MPI processes
     return status;
 }
 
