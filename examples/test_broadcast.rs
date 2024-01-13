@@ -1,4 +1,4 @@
-use msgpass::{mpi_finalize, mpi_init, mpi_world_rank, mpi_world_size, Communicator, StrError};
+use msgpass::*;
 
 fn main() -> Result<(), StrError> {
     mpi_init()?;

@@ -1,9 +1,9 @@
-use msgpass::{mpi_finalize, mpi_init, mpi_initialized, mpi_world_rank, mpi_world_size, StrError};
+use msgpass::*;
 use std::env;
 
 fn main() -> Result<(), StrError> {
     let np = match env::var("CI") {
-        Ok(_) => 1,
+        Ok(_) => 2,
         Err(_) => 4,
     };
 
