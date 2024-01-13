@@ -15,11 +15,16 @@ pub enum MpiOp {
     Sum = 2,  // sum
     Prod = 3, // product
     Land = 4, // logical and
-    Band = 5, // bit-wise and
-    Lor = 6,  // logical or
-    Bor = 7,  // bit-wise or
-    Lxor = 8, // logical xor
-    Bxor = 9, // bit-wise xor
+    Lor = 5,  // logical or
+    Lxor = 6, // logical xor
+}
+
+#[derive(Clone, Copy)]
+pub enum MpiOpx {
+    Max = 0,  // maximum
+    Min = 1,  // minimum
+    Sum = 2,  // sum
+    Prod = 3, // product
 }
 
 impl MpiType {
@@ -29,6 +34,12 @@ impl MpiType {
 }
 
 impl MpiOp {
+    pub fn n(&self) -> i32 {
+        *self as i32
+    }
+}
+
+impl MpiOpx {
     pub fn n(&self) -> i32 {
         *self as i32
     }

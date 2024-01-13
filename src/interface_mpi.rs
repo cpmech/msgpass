@@ -302,7 +302,7 @@ impl Communicator {
         Ok(())
     }
 
-    pub fn reduce_f32(&mut self, root: usize, dest: &mut [f32], orig: &[f32], op: MpiOp) -> Result<(), StrError> {
+    pub fn reduce_f32(&mut self, root: usize, dest: &mut [f32], orig: &[f32], op: MpiOpx) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("array must have the same size");
         }
@@ -315,7 +315,7 @@ impl Communicator {
         Ok(())
     }
 
-    pub fn reduce_f64(&mut self, root: usize, dest: &mut [f64], orig: &[f64], op: MpiOp) -> Result<(), StrError> {
+    pub fn reduce_f64(&mut self, root: usize, dest: &mut [f64], orig: &[f64], op: MpiOpx) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("array must have the same size");
         }

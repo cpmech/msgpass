@@ -19,7 +19,6 @@ for test in examples/test_*.rs; do
     filekey="${filename%%.*}"
 
     echo
-    echo
     echo "### $filekey ######################################################"
 
     mpirun -np $NP $EXAMPLES/$filekey

@@ -40,8 +40,8 @@ fn main() -> Result<(), StrError> {
     comm.reduce_u32(0, &mut y_u32, &x_u32, MpiOp::Sum)?;
     comm.reduce_u64(0, &mut y_u64, &x_u64, MpiOp::Sum)?;
     comm.reduce_usize(0, &mut y_usz, &x_usz, MpiOp::Sum)?;
-    comm.reduce_f32(0, &mut y_f32, &x_f32, MpiOp::Sum)?;
-    comm.reduce_f64(0, &mut y_f64, &x_f64, MpiOp::Sum)?;
+    comm.reduce_f32(0, &mut y_f32, &x_f32, MpiOpx::Sum)?;
+    comm.reduce_f64(0, &mut y_f64, &x_f64, MpiOpx::Sum)?;
 
     if rank == 0 {
         let mut correct_i32 = vec![0_i32; N];

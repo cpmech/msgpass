@@ -4,7 +4,6 @@ fn main() -> Result<(), StrError> {
     mpi_init()?;
 
     let rank = mpi_world_rank()?;
-    let size = mpi_world_size()?;
     let mut comm = Communicator::new()?;
 
     const N: usize = 3;
@@ -37,13 +36,13 @@ fn main() -> Result<(), StrError> {
     let mut y_f32 = vec![0_f32; N];
     let mut y_f64 = vec![0_f64; N];
 
-    comm.reduce_i32(0, &mut y_i32, &x_i32, MpiOp::Max)?;
-    comm.reduce_i64(0, &mut y_i64, &x_i64, MpiOp::Max)?;
-    comm.reduce_u32(0, &mut y_u32, &x_u32, MpiOp::Max)?;
-    comm.reduce_u64(0, &mut y_u64, &x_u64, MpiOp::Max)?;
-    comm.reduce_usize(0, &mut y_usz, &x_usz, MpiOp::Max)?;
-    comm.reduce_f32(0, &mut y_f32, &x_f32, MpiOpx::Max)?;
-    comm.reduce_f64(0, &mut y_f64, &x_f64, MpiOpx::Max)?;
+    comm.reduce_i32(0, &mut y_i32, &x_i32, MpiOp::Min)?;
+    comm.reduce_i64(0, &mut y_i64, &x_i64, MpiOp::Min)?;
+    comm.reduce_u32(0, &mut y_u32, &x_u32, MpiOp::Min)?;
+    comm.reduce_u64(0, &mut y_u64, &x_u64, MpiOp::Min)?;
+    comm.reduce_usize(0, &mut y_usz, &x_usz, MpiOp::Min)?;
+    comm.reduce_f32(0, &mut y_f32, &x_f32, MpiOpx::Min)?;
+    comm.reduce_f64(0, &mut y_f64, &x_f64, MpiOpx::Min)?;
 
     if rank == 0 {
         let mut correct_i32 = vec![0_i32; N];
@@ -54,13 +53,13 @@ fn main() -> Result<(), StrError> {
         let mut correct_f32 = vec![0_f32; N];
         let mut correct_f64 = vec![0_f64; N];
         for i in 0..N {
-            correct_i32[i] = size as i32;
-            correct_i64[i] = size as i64;
-            correct_u32[i] = size as u32;
-            correct_u64[i] = size as u64;
-            correct_usz[i] = size;
-            correct_f32[i] = size as f32;
-            correct_f64[i] = size as f64;
+            correct_i32[i] = 1;
+            correct_i64[i] = 1;
+            correct_u32[i] = 1;
+            correct_u64[i] = 1;
+            correct_usz[i] = 1;
+            correct_f32[i] = 1.0;
+            correct_f64[i] = 1.0;
         }
         assert_eq!(&y_i32, &correct_i32);
         assert_eq!(&y_i64, &correct_i64);
