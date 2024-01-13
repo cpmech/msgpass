@@ -11,10 +11,10 @@ jobs:
       - name: Install libraries
         run: |
           sudo apt-get update -y && sudo apt-get install -y build-essential ${{ matrix.mpi-lib }}
-      - name: Setup environment variable
+      - name: Set environment variables
         if: runner.mpi-lib == 'libmpich-dev'
         run: |
-          export MSGPASS_USE_MPICH=1
+          echo MSGPASS_USE_MPICH=1 | tee -a $GITHUB_ENV
       - name: Run tests
         run: |
           bash run-tests.bash
