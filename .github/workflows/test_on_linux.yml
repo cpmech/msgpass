@@ -2,11 +2,15 @@ name: Test on Linux
 on: [pull_request, push]
 jobs:
   test_on_linux:
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
-        mpi_lib: [libopenmpi-dev, libmpich-dev]
+        include:
+          - os: ubuntu-latest
+            mpi_lib: libopenmpi-dev
+          - os: ubuntu-latest
+            mpi_lib: libmpich-dev
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Install libraries
@@ -19,4 +23,3 @@ jobs:
       - name: Run tests
         run: |
           bash run-tests.bash
-
