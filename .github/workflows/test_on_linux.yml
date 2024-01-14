@@ -2,24 +2,21 @@ name: Test on Linux
 on: [pull_request, push]
 jobs:
   test_on_linux:
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            mpi_lib: libopenmpi-dev
-          - os: ubuntu-latest
-            mpi_lib: libmpich-dev
-    runs-on: ${{ matrix.os }}
+          - mpi_lib: libopenmpi-dev
+            flag: 0
+          - mpi_lib: libmpich-dev
+            flag: 1
     steps:
       - uses: actions/checkout@v4
       - name: Install libraries
         run: |
           sudo apt-get update -y && sudo apt-get install -y build-essential ${{ matrix.mpi_lib }}
-      - name: Set environment variables up
-        if: $${{ matrix.mpi_lib }} == 'libmpich-dev'
-        run: |
-          export MSGPASS_USE_MPICH=1
       - name: Run tests
         run: |
+          export MSGPASS_USE_MPICH=${{ matrix.flag }}
           bash run-tests.bash
