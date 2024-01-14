@@ -1,6 +1,6 @@
 /// Specifies the option for MPI_Init_thread
 ///
-/// From https://enccs.github.io/intermediate-mpi/mpi-and-threads-pt1/
+/// From <https://enccs.github.io/intermediate-mpi/mpi-and-threads-pt1/>
 ///
 /// * MPI_THREAD_SINGLE - rank is not allowed to use threads, which is basically equivalent to calling MPI_Init.
 ///   With MPI_THREAD_SINGLE, the rank may use MPI freely and will not use threads.
