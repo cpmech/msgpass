@@ -9,7 +9,7 @@ fn main() -> Result<(), StrError> {
 
     assert!(!mpi_initialized()?);
 
-    mpi_init_single_thread()?;
+    mpi_init_thread(MpiThread::Serialized)?;
 
     let rank = mpi_world_rank()?;
     let size = mpi_world_size()?;

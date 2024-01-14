@@ -7,6 +7,13 @@
 
 const int32_t C_MPI_ERROR_INIT_THREADED = 10000;
 
+const int C_MPI_THREAD_OPTIONS[4] = {
+    MPI_THREAD_SINGLE,     //  0  only one thread will execute
+    MPI_THREAD_FUNNELED,   //  1  if the process is multithreaded, only the thread that called MPI_Init_thread will make MPI calls
+    MPI_THREAD_SERIALIZED, //  2  if the process is multithreaded, only one thread will make MPI library calls at one time
+    MPI_THREAD_MULTIPLE,   //  3  if the process is multithreaded, multiple threads may call MPI at once with no restrictions
+};
+
 const MPI_Datatype C_MPI_TYPES[6] = {
     MPI_INT32_T,  //  0  i32
     MPI_INT64_T,  //  1  i64

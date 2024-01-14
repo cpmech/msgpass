@@ -7,15 +7,16 @@
 
 // https://www.open-mpi.org/doc/v4.1/
 
-int32_t c_mpi_init_single_thread() {
+int32_t c_mpi_init() {
     int status = MPI_Init(NULL, NULL); // initializes the MPI execution environment
     return status;
 }
 
-int32_t c_mpi_init() {
+int32_t c_mpi_init_thread(int32_t option_index) {
+    int option = C_MPI_THREAD_OPTIONS[option_index];
     int provided;
-    int status = MPI_Init_thread(NULL, NULL, MPI_THREAD_MULTIPLE, &provided); // initializes the MPI execution environment
-    if (provided != MPI_THREAD_MULTIPLE) {
+    int status = MPI_Init_thread(NULL, NULL, option, &provided); // initializes the MPI execution environment
+    if (provided != option) {
         return C_MPI_ERROR_INIT_THREADED;
     }
     return status;

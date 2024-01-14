@@ -27,7 +27,7 @@ fn monte_carlo_points_in_circle() -> usize {
 }
 
 fn main() -> Result<(), StrError> {
-    mpi_init()?;
+    mpi_init_thread(MpiThread::Serialized)?;
 
     let rank = mpi_world_rank()?;
     let size = mpi_world_size()?;
