@@ -6,9 +6,9 @@
 ## Contents
 
 * [Introduction](#introduction)
-* [Crates](#crates)
 * [Installation on Debian/Ubuntu/Linux](#installation)
 * [Installation on macOS](#macos)
+* [Setting Cargo.toml](#cargo)
 * [Examples](#examples)
 * [Todo list](#todo)
 
@@ -20,10 +20,6 @@ We try to test all functions as much as possible, but test coverage could be bet
 
 > [!NOTE]
 > Unlike the MPI standard, we use `mpi_init` to initialize the simulation with multiple threads. Thus, our `mpi_init` function calls `MPI_Init_thread` with `MPI_THREAD_MULTIPLE`. On the other hand, our `mpi_init_single_thread` calls `MPI_Init`.
-
-## <a name="crates"></a> Crates
-
-TODO
 
 ## <a name="installation"></a> Installation on Debian/Ubuntu/Linux
 
@@ -58,6 +54,17 @@ Also, export the following environment variable:
 
 ```bash
 export echo TMPDIR=/tmp
+```
+
+## <a name="cargo"></a> Setting Cargo.toml
+
+[![Crates.io](https://img.shields.io/crates/v/msgpass.svg)](https://crates.io/crates/msgpass)
+
+👆 Check the crate version and update your Cargo.toml accordingly:
+
+```toml
+[dependencies]
+msgpass = "*"
 ```
 
 ## <a name="examples"></a> Examples
