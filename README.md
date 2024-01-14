@@ -22,9 +22,9 @@ We try to test all functions as much as possible, but test coverage could be bet
 > [!NOTE]
 > Unlike the MPI standard, we use `mpi_init` to initialize the simulation with multiple threads. Thus, our `mpi_init` function calls `MPI_Init_thread` with `MPI_THREAD_MULTIPLE`. On the other hand, our `mpi_init_single_thread` calls `MPI_Init`.
 
-Documentation:
+**Documentation:**
 
-- [Documentation](https://docs.rs/msgpass)
+- [![Documentation](https://docs.rs/msgpass/badge.svg)](https://docs.rs/msgpass)
 
 ## <a name="installation"></a> Installation on Debian/Ubuntu/Linux
 
