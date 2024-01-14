@@ -1,5 +1,6 @@
 # Thin wrapper to a Message Passing Interface (MPI)
 
+[![Documentation](https://docs.rs/msgpass/badge.svg)](https://docs.rs/msgpass)
 [![Test on Linux](https://github.com/cpmech/msgpass/actions/workflows/test_on_linux.yml/badge.svg)](https://github.com/cpmech/msgpass/actions/workflows/test_on_linux.yml)
 [![Test on macOS](https://github.com/cpmech/msgpass/actions/workflows/test_on_macos.yml/badge.svg)](https://github.com/cpmech/msgpass/actions/workflows/test_on_macos.yml)
 
@@ -20,6 +21,10 @@ We try to test all functions as much as possible, but test coverage could be bet
 
 > [!NOTE]
 > Unlike the MPI standard, we use `mpi_init` to initialize the simulation with multiple threads. Thus, our `mpi_init` function calls `MPI_Init_thread` with `MPI_THREAD_MULTIPLE`. On the other hand, our `mpi_init_single_thread` calls `MPI_Init`.
+
+Documentation:
+
+- [Documentation](https://docs.rs/msgpass)
 
 ## <a name="installation"></a> Installation on Debian/Ubuntu/Linux
 
