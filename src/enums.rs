@@ -8,6 +8,7 @@ pub(crate) enum MpiType {
     F64 = 5,
 }
 
+/// Specifies the MPI operator used in reduce-like functions (for integer arrays)
 #[derive(Clone, Copy)]
 pub enum MpiOp {
     Max = 0,  // maximum
@@ -19,6 +20,7 @@ pub enum MpiOp {
     Lxor = 6, // logical xor
 }
 
+/// Specifies the MPI operator used in reduce-like functions (for float number arrays)
 #[derive(Clone, Copy)]
 pub enum MpiOpx {
     Max = 0,  // maximum
@@ -28,19 +30,19 @@ pub enum MpiOpx {
 }
 
 impl MpiType {
-    pub fn n(&self) -> i32 {
+    pub(crate) fn n(&self) -> i32 {
         *self as i32
     }
 }
 
 impl MpiOp {
-    pub fn n(&self) -> i32 {
+    pub(crate) fn n(&self) -> i32 {
         *self as i32
     }
 }
 
 impl MpiOpx {
-    pub fn n(&self) -> i32 {
+    pub(crate) fn n(&self) -> i32 {
         *self as i32
     }
 }
