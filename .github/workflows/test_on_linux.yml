@@ -6,16 +6,14 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        include:
-          - mpi_lib: libopenmpi-dev
-          - mpi_lib: libmpich-dev
+        mpi_lib: [libopenmpi-dev, libmpich-dev]
     steps:
       - uses: actions/checkout@v4
       - name: Install libraries
         run: |
           sudo apt-get update -y && sudo apt-get install -y build-essential ${{ matrix.mpi_lib }}
       - name: Set environment variables up
-        if: runner.mpi_lib == 'libmpich-dev'
+        if: $${{ matrix.mpi_lib }} == 'libmpich-dev'
         run: |
           echo MSGPASS_USE_MPICH=1 | tee -a $GITHUB_ENV
       - name: Run tests
