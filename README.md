@@ -18,6 +18,9 @@ MsgPass (Message Passing) is a thin Rust wrapper to MPI. We consider a small sub
 
 We try to test all functions as much as possible, but test coverage could be better. The tests must be called with `mpiexec`, thus it is easy to use the `run-tests.bash` script.
 
+> [!NOTE]
+> Unlike the MPI standard, we use `mpi_init` to initialize the simulation with multiple threads. Thus, our `mpi_init` function calls `MPI_Init_thread` with `MPI_THREAD_MULTIPLE`. On the other hand, our `mpi_init_single_thread` calls `MPI_Init`.
+
 ## <a name="crates"></a> Crates
 
 TODO
