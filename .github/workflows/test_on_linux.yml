@@ -19,7 +19,7 @@ jobs:
       - name: Set environment variables up
         if: $${{ matrix.mpi_lib }} == 'libmpich-dev'
         run: |
-          echo MSGPASS_USE_MPICH=1 | tee -a $GITHUB_ENV
+          export MSGPASS_USE_MPICH=1
       - name: Run tests
         run: |
           bash run-tests.bash
