@@ -11,8 +11,8 @@ pub(crate) struct ExtCommunicator {
 }
 
 extern "C" {
-    fn c_mpi_init_single_thread() -> i32;
     fn c_mpi_init() -> i32;
+    fn c_mpi_init_thread(option_index: i32) -> i32;
     fn c_mpi_finalize() -> i32;
     fn c_mpi_initialized(flag: *mut i32) -> i32;
     fn c_mpi_world_rank(rank: *mut i32) -> i32;
@@ -30,35 +30,25 @@ extern "C" {
     fn comm_get_receive_status(comm: *mut ExtCommunicator, source: *mut i32, tag: *mut i32, error: *mut i32);
 }
 
-/// Initializes the MPI execution environment (single-threaded)
-///
-/// Corresponds to:
-///
-/// ```text
-/// MPI_Init(NULL, NULL)
-/// ```
-pub fn mpi_init_single_thread() -> Result<(), StrError> {
+/// Initializes the MPI execution environment
+pub fn mpi_init() -> Result<(), StrError> {
     unsafe {
-        let status = c_mpi_init_single_thread();
+        let status = c_mpi_init();
         if status != C_MPI_SUCCESS {
-            return Err("MPI failed to initialize (single-thread)");
+            return Err("MPI failed to initialize");
         }
     }
     Ok(())
 }
 
-/// Initializes the MPI execution environment (multi-threaded)
+/// Initializes the MPI execution environment (with thread options)
 ///
-/// Corresponds to:
-///
-/// ```text
-/// MPI_Init_thread(NULL, NULL, MPI_THREAD_MULTIPLE, &provided)
-/// ```
-pub fn mpi_init() -> Result<(), StrError> {
+/// See [MpiThread]
+pub fn mpi_init_thread(option: MpiThread) -> Result<(), StrError> {
     unsafe {
-        let status = c_mpi_init();
+        let status = c_mpi_init_thread(option.n());
         if status == C_MPI_ERROR_INIT_THREADED {
-            return Err("MPI failed to initialize a multithreaded setup");
+            return Err("MPI failed to match the required thread option");
         }
         if status != C_MPI_SUCCESS {
             return Err("MPI failed to initialize (threaded)");
