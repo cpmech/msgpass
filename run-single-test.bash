@@ -28,5 +28,5 @@ echo
 echo
 echo "### $TEST ######################################################"
 
-mpirun -np $NP $EXAMPLES/$TEST
+mpiexec -np $NP $EXAMPLES/$TEST
 

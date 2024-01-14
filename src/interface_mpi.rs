@@ -30,6 +30,13 @@ extern "C" {
     fn comm_get_receive_status(comm: *mut ExtCommunicator, source: *mut i32, tag: *mut i32, error: *mut i32);
 }
 
+/// Initializes the MPI execution environment (single-threaded)
+///
+/// Corresponds to:
+///
+/// ```text
+/// MPI_Init(NULL, NULL)
+/// ```
 pub fn mpi_init_single_thread() -> Result<(), StrError> {
     unsafe {
         let status = c_mpi_init_single_thread();
@@ -40,6 +47,13 @@ pub fn mpi_init_single_thread() -> Result<(), StrError> {
     Ok(())
 }
 
+/// Initializes the MPI execution environment (multi-threaded)
+///
+/// Corresponds to:
+///
+/// ```text
+/// MPI_Init_thread(NULL, NULL, MPI_THREAD_MULTIPLE, &provided)
+/// ```
 pub fn mpi_init() -> Result<(), StrError> {
     unsafe {
         let status = c_mpi_init();
@@ -53,6 +67,7 @@ pub fn mpi_init() -> Result<(), StrError> {
     Ok(())
 }
 
+/// Terminates the MPI execution environment
 pub fn mpi_finalize() -> Result<(), StrError> {
     unsafe {
         let status = c_mpi_finalize();
@@ -63,6 +78,7 @@ pub fn mpi_finalize() -> Result<(), StrError> {
     Ok(())
 }
 
+/// Checks whether MPI has been initialized or not
 pub fn mpi_initialized() -> Result<bool, StrError> {
     unsafe {
         let mut flag: i32 = 0;
@@ -74,6 +90,7 @@ pub fn mpi_initialized() -> Result<bool, StrError> {
     }
 }
 
+/// Determines the rank of the calling process in the MPI_COMM_WORLD communicator
 pub fn mpi_world_rank() -> Result<usize, StrError> {
     unsafe {
         let mut rank: i32 = 0;
@@ -85,6 +102,7 @@ pub fn mpi_world_rank() -> Result<usize, StrError> {
     }
 }
 
+/// Returns the size of the group associated with the MPI_COMM_WORLD communicator
 pub fn mpi_world_size() -> Result<usize, StrError> {
     unsafe {
         let mut size: i32 = 0;
@@ -96,11 +114,16 @@ pub fn mpi_world_size() -> Result<usize, StrError> {
     }
 }
 
+/// Implements the Rust communicator (wrapping the C data)
+///
+/// This struct holds a pointer to the C communicator, which stores the communicator (MPI_Comm),
+/// the group (MPI_Group), and the status from recv calls (MPI_Status).
 pub struct Communicator {
     handle: *mut ExtCommunicator,
 }
 
 impl Drop for Communicator {
+    /// Deallocates the C memory
     fn drop(&mut self) {
         unsafe {
             comm_drop(self.handle);
@@ -109,6 +132,7 @@ impl Drop for Communicator {
 }
 
 impl Communicator {
+    /// Allocates a new instance
     pub fn new() -> Result<Self, StrError> {
         unsafe {
             let ext_comm = comm_new();
@@ -119,6 +143,7 @@ impl Communicator {
         }
     }
 
+    /// Allocates a new instance using a subset of processors
     pub fn new_subset(ranks: &[usize]) -> Result<Self, StrError> {
         unsafe {
             let n = to_i32(ranks.len());
@@ -131,6 +156,7 @@ impl Communicator {
         }
     }
 
+    /// Terminates the MPI execution environment
     pub fn abort(&mut self, error_code: i32) -> Result<(), StrError> {
         unsafe {
             let status = comm_abort(self.handle, error_code);
@@ -141,6 +167,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Synchronizes the MPI processes
     pub fn barrier(&mut self) -> Result<(), StrError> {
         unsafe {
             let status = comm_barrier(self.handle);
@@ -153,6 +180,7 @@ impl Communicator {
 
     //  broadcast --------------------------------------------------------------------------------------
 
+    /// Broadcasts a message from sender to all other processes in the group
     pub fn broadcast_i32(&mut self, sender: usize, x: &mut [i32]) -> Result<(), StrError> {
         unsafe {
             let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::I32.n());
@@ -163,6 +191,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Broadcasts a message from sender to all other processes in the group
     pub fn broadcast_i64(&mut self, sender: usize, x: &mut [i64]) -> Result<(), StrError> {
         unsafe {
             let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::I64.n());
@@ -173,6 +202,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Broadcasts a message from sender to all other processes in the group
     pub fn broadcast_u32(&mut self, sender: usize, x: &mut [u32]) -> Result<(), StrError> {
         unsafe {
             let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::U32.n());
@@ -183,6 +213,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Broadcasts a message from sender to all other processes in the group
     pub fn broadcast_u64(&mut self, sender: usize, x: &mut [u64]) -> Result<(), StrError> {
         unsafe {
             let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::U64.n());
@@ -193,6 +224,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Broadcasts a message from sender to all other processes in the group
     #[cfg(target_pointer_width = "64")]
     pub fn broadcast_usize(&mut self, sender: usize, x: &mut [usize]) -> Result<(), StrError> {
         unsafe {
@@ -204,6 +236,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Broadcasts a message from sender to all other processes in the group
     #[cfg(target_pointer_width = "32")]
     pub fn broadcast_usize(&mut self, sender: usize, x: &mut [usize]) -> Result<(), StrError> {
         unsafe {
@@ -215,6 +248,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Broadcasts a message from sender to all other processes in the group
     pub fn broadcast_f32(&mut self, sender: usize, x: &mut [f32]) -> Result<(), StrError> {
         unsafe {
             let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::F32.n());
@@ -225,6 +259,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Broadcasts a message from sender to all other processes in the group
     pub fn broadcast_f64(&mut self, sender: usize, x: &mut [f64]) -> Result<(), StrError> {
         unsafe {
             let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::F64.n());
@@ -237,6 +272,7 @@ impl Communicator {
 
     // reduce -----------------------------------------------------------------------------------------
 
+    /// Reduces values on all processes within a group
     pub fn reduce_i32(&mut self, root: usize, dest: &mut [i32], orig: &[i32], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
@@ -250,6 +286,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Reduces values on all processes within a group
     pub fn reduce_i64(&mut self, root: usize, dest: &mut [i64], orig: &[i64], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
@@ -263,6 +300,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Reduces values on all processes within a group
     pub fn reduce_u32(&mut self, root: usize, dest: &mut [u32], orig: &[u32], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
@@ -276,6 +314,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Reduces values on all processes within a group
     pub fn reduce_u64(&mut self, root: usize, dest: &mut [u64], orig: &[u64], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
@@ -289,6 +328,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Reduces values on all processes within a group
     #[cfg(target_pointer_width = "64")]
     pub fn reduce_usize(&mut self, root: usize, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
@@ -303,6 +343,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Reduces values on all processes within a group
     #[cfg(target_pointer_width = "32")]
     pub fn reduce_usize(&mut self, root: usize, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
@@ -317,6 +358,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Reduces values on all processes within a group
     pub fn reduce_f32(&mut self, root: usize, dest: &mut [f32], orig: &[f32], op: MpiOpx) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
@@ -330,6 +372,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Reduces values on all processes within a group
     pub fn reduce_f64(&mut self, root: usize, dest: &mut [f64], orig: &[f64], op: MpiOpx) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
@@ -345,6 +388,7 @@ impl Communicator {
 
     // allreduce -----------------------------------------------------------------------------------------
 
+    /// Combines values from all processes and distributes the result back to all processes
     pub fn allreduce_i32(&mut self, dest: &mut [i32], orig: &[i32], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
@@ -358,6 +402,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Combines values from all processes and distributes the result back to all processes
     pub fn allreduce_i64(&mut self, dest: &mut [i64], orig: &[i64], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
@@ -371,6 +416,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Combines values from all processes and distributes the result back to all processes
     pub fn allreduce_u32(&mut self, dest: &mut [u32], orig: &[u32], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
@@ -384,6 +430,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Combines values from all processes and distributes the result back to all processes
     pub fn allreduce_u64(&mut self, dest: &mut [u64], orig: &[u64], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
@@ -397,6 +444,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Combines values from all processes and distributes the result back to all processes
     #[cfg(target_pointer_width = "64")]
     pub fn allreduce_usize(&mut self, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
@@ -411,6 +459,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Combines values from all processes and distributes the result back to all processes
     #[cfg(target_pointer_width = "32")]
     pub fn allreduce_usize(&mut self, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
@@ -425,6 +474,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Combines values from all processes and distributes the result back to all processes
     pub fn allreduce_f32(&mut self, dest: &mut [f32], orig: &[f32], op: MpiOpx) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
@@ -438,6 +488,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Combines values from all processes and distributes the result back to all processes
     pub fn allreduce_f64(&mut self, dest: &mut [f64], orig: &[f64], op: MpiOpx) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
@@ -453,6 +504,7 @@ impl Communicator {
 
     // getters -------------------------------------------------------------------------------------------
 
+    /// Returns the status of the last receive call
     pub fn get_receive_status(&mut self) -> (i32, i32, i32) {
         let mut source = 0;
         let mut tag = 0;
@@ -465,6 +517,7 @@ impl Communicator {
 
     // send ----------------------------------------------------------------------------------------------
 
+    /// Performs a standard-mode blocking send
     pub fn send_i32(&mut self, data: &[i32], to_rank: usize, tag: i32) -> Result<(), StrError> {
         unsafe {
             let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::I32.n(), to_i32(to_rank), tag);
@@ -475,6 +528,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Performs a standard-mode blocking send
     pub fn send_i64(&mut self, data: &[i64], to_rank: usize, tag: i32) -> Result<(), StrError> {
         unsafe {
             let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::I64.n(), to_i32(to_rank), tag);
@@ -485,6 +539,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Performs a standard-mode blocking send
     pub fn send_u32(&mut self, data: &[u32], to_rank: usize, tag: i32) -> Result<(), StrError> {
         unsafe {
             let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::U32.n(), to_i32(to_rank), tag);
@@ -495,6 +550,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Performs a standard-mode blocking send
     pub fn send_u64(&mut self, data: &[u64], to_rank: usize, tag: i32) -> Result<(), StrError> {
         unsafe {
             let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::U64.n(), to_i32(to_rank), tag);
@@ -505,6 +561,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Performs a standard-mode blocking send
     #[cfg(target_pointer_width = "64")]
     pub fn send_usize(&mut self, data: &[usize], to_rank: usize, tag: i32) -> Result<(), StrError> {
         unsafe {
@@ -516,6 +573,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Performs a standard-mode blocking send
     #[cfg(target_pointer_width = "32")]
     pub fn send_usize(&mut self, data: &[usize], to_rank: usize, tag: i32) -> Result<(), StrError> {
         unsafe {
@@ -527,6 +585,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Performs a standard-mode blocking send
     pub fn send_f32(&mut self, data: &[f32], to_rank: usize, tag: i32) -> Result<(), StrError> {
         unsafe {
             let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::F32.n(), to_i32(to_rank), tag);
@@ -537,6 +596,7 @@ impl Communicator {
         Ok(())
     }
 
+    /// Performs a standard-mode blocking send
     pub fn send_f64(&mut self, data: &[f64], to_rank: usize, tag: i32) -> Result<(), StrError> {
         unsafe {
             let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::F64.n(), to_i32(to_rank), tag);
@@ -549,7 +609,7 @@ impl Communicator {
 
     // receive -------------------------------------------------------------------------------------------
 
-    /// Receives i32 array
+    /// Performs a standard-mode blocking receive
     ///
     /// `data` -- Buffer to store the received data
     /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
@@ -564,7 +624,7 @@ impl Communicator {
         Ok(())
     }
 
-    /// Receives i64 array
+    /// Performs a standard-mode blocking receive
     ///
     /// `data` -- Buffer to store the received data
     /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
@@ -579,7 +639,7 @@ impl Communicator {
         Ok(())
     }
 
-    /// Receives u32 array
+    /// Performs a standard-mode blocking receive
     ///
     /// `data` -- Buffer to store the received data
     /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
@@ -594,7 +654,7 @@ impl Communicator {
         Ok(())
     }
 
-    /// Receives u64 array
+    /// Performs a standard-mode blocking receive
     ///
     /// `data` -- Buffer to store the received data
     /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
@@ -609,7 +669,7 @@ impl Communicator {
         Ok(())
     }
 
-    /// Receives usize array
+    /// Performs a standard-mode blocking receive
     ///
     /// `data` -- Buffer to store the received data
     /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
@@ -625,7 +685,7 @@ impl Communicator {
         Ok(())
     }
 
-    /// Receives usize array
+    /// Performs a standard-mode blocking receive
     ///
     /// `data` -- Buffer to store the received data
     /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
@@ -641,7 +701,7 @@ impl Communicator {
         Ok(())
     }
 
-    /// Receives f32 array
+    /// Performs a standard-mode blocking receive
     ///
     /// `data` -- Buffer to store the received data
     /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
@@ -656,7 +716,7 @@ impl Communicator {
         Ok(())
     }
 
-    /// Receives f64 array
+    /// Performs a standard-mode blocking receive
     ///
     /// `data` -- Buffer to store the received data
     /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)

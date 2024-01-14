@@ -9,19 +9,23 @@ fn main() -> Result<(), StrError> {
     let mut comm = Communicator::new()?;
 
     if rank == 0 {
-        thread::sleep(Duration::from_millis(100));
-        println!("{} says hi (zero is always the last)\n", rank);
+        thread::sleep(Duration::from_millis(20));
+        println!("{} says hi << zero is always the last\n", rank);
     } else {
-        println!("{} says hi (zero is always the last)", rank);
+        println!("{} says hi", rank);
     }
 
     if rank == 0 {
-        thread::sleep(Duration::from_millis(100));
+        thread::sleep(Duration::from_millis(20));
     }
 
     comm.barrier()?;
 
-    println!("{} says hi (now zero may not be the last)", rank);
+    if rank == 0 {
+        println!("{} says hi << now zero may not be the last", rank);
+    } else {
+        println!("{} says hi", rank);
+    }
 
     mpi_finalize()?;
 

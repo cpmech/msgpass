@@ -2,8 +2,10 @@
   "cSpell.words": [
     "allreduce",
     "Bxor",
+    "libmpich",
     "libopenmpi",
     "Lxor",
+    "mpiexec",
     "msgpass",
     "openmpi"
   ]
