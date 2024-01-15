@@ -112,6 +112,16 @@ int32_t comm_barrier(struct ExtCommunicator *comm) {
     return status;
 }
 
+int32_t comm_rank(struct ExtCommunicator *comm, int32_t *rank) {
+    int status = MPI_Comm_rank(comm->handle, rank); // determines the rank of the calling process in the communicator
+    return status;
+}
+
+int32_t comm_size(struct ExtCommunicator *comm, int32_t *size) {
+    int status = MPI_Comm_size(comm->handle, size); // returns the size of the group associated with a communicator
+    return status;
+}
+
 int32_t comm_broadcast(struct ExtCommunicator *comm, int32_t sender, int32_t n, void *x, int32_t type_index) {
     MPI_Datatype dty = C_MPI_TYPES[type_index];
     int status = MPI_Bcast(x, n, dty, sender, comm->handle); // broadcasts a message from the process with rank root to all other processes of the group

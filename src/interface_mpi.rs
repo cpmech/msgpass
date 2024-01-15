@@ -22,6 +22,8 @@ extern "C" {
     fn comm_new_subset(n_rank: i32, ranks: *const i32) -> *mut ExtCommunicator;
     fn comm_abort(comm: *mut ExtCommunicator, error_code: i32) -> i32;
     fn comm_barrier(comm: *mut ExtCommunicator) -> i32;
+    fn comm_rank(comm: *mut ExtCommunicator, rank: *mut i32) -> i32;
+    fn comm_size(comm: *mut ExtCommunicator, size: *mut i32) -> i32;
     fn comm_broadcast(comm: *mut ExtCommunicator, sender: i32, n: i32, x: *mut c_void, type_index: i32) -> i32;
     fn comm_reduce(comm: *mut ExtCommunicator, root: i32, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32, op_index: i32) -> i32;
     fn comm_allreduce(comm: *mut ExtCommunicator, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32, op_index: i32) -> i32;
@@ -166,6 +168,30 @@ impl Communicator {
             }
         }
         Ok(())
+    }
+
+    /// Determines the rank of the calling process in the communicator
+    pub fn rank(&mut self) -> Result<usize, StrError> {
+        let mut rank: i32 = 0;
+        unsafe {
+            let status = comm_rank(self.handle, &mut rank);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to get the rank");
+            }
+        }
+        Ok(rank as usize)
+    }
+
+    /// Returns the size of the group associated with a communicator
+    pub fn size(&mut self) -> Result<usize, StrError> {
+        let mut size: i32 = 0;
+        unsafe {
+            let status = comm_size(self.handle, &mut size);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to get the size");
+            }
+        }
+        Ok(size as usize)
     }
 
     //  broadcast --------------------------------------------------------------------------------------
