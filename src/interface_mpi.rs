@@ -5,7 +5,7 @@ use crate::StrError;
 use std::ffi::c_void;
 
 #[repr(C)]
-pub(crate) struct ExtCommunicator {
+struct ExtCommunicator {
     data: [u8; 0],
     marker: core::marker::PhantomData<(*mut u8, core::marker::PhantomPinned)>,
 }
