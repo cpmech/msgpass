@@ -10,6 +10,7 @@
     "msgpass",
     "nrank",
     "oneapi",
-    "openmpi"
+    "openmpi",
+    "setvars"
   ]
 }

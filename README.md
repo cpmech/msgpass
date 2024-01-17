@@ -25,7 +25,7 @@ We try to test all functions as much as possible, but test coverage could be bet
 
 ## <a name="installation"></a> Installation on Debian/Ubuntu/Linux
 
-On **Ubuntu/Linux**, install OpenMPI or MPICH (requires an environment variable). For instance,
+On **Ubuntu/Linux**, install OpenMPI, MPICH, or Intel MPI. For instance,
 
 ```bash
 sudo apt install libopenmpi-dev
@@ -37,10 +37,23 @@ or
 sudo apt install libmpich-dev
 ```
 
+or
+
+```bash
+bash ./zscripts/install-intel-mpi-debian.bash
+```
+
 For MPICH, the following environment variable is required:
 
 ```bash
 export MSGPASS_USE_MPICH=1
+```
+
+For Intel MPI, the following commands are required:
+
+```bash
+source /opt/intel/oneapi/setvars.sh
+export MSGPASS_USE_INTEL_MPI=1
 ```
 
 ## <a name="macos"></a> Installation on macOS
