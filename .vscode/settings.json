@@ -1,5 +1,6 @@
 {
   "cSpell.words": [
+    "allgather",
     "allreduce",
     "Bxor",
     "libmpich",
@@ -7,6 +8,7 @@
     "Lxor",
     "mpiexec",
     "msgpass",
+    "nrank",
     "openmpi"
   ]
 }

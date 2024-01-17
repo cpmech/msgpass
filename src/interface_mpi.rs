@@ -30,6 +30,9 @@ extern "C" {
     fn comm_send(comm: *mut ExtCommunicator, n: i32, data: *const c_void, type_index: i32, to_rank: i32, tag: i32) -> i32;
     fn comm_receive(comm: *mut ExtCommunicator, n: i32, data: *mut c_void, type_index: i32, from_rank: i32, tag: i32) -> i32;
     fn comm_get_receive_status(comm: *mut ExtCommunicator, source: *mut i32, tag: *mut i32, error: *mut i32);
+    fn comm_gather_im_root(comm: *mut ExtCommunicator, root: i32, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32) -> i32;
+    fn comm_allgather(comm: *mut ExtCommunicator, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32) -> i32;
+    fn comm_gather_im_not_root(comm: *mut ExtCommunicator, root: i32, n: i32, orig: *const c_void, type_index: i32) -> i32;
 }
 
 /// Initializes the MPI execution environment
@@ -742,6 +745,178 @@ impl Communicator {
             let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::F64.n(), from_rank, tag);
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to receive f64 array");
+            }
+        }
+        Ok(())
+    }
+
+    // gather -------------------------------------------------------------------------------------------
+
+    pub fn gather_i32(&mut self, root: usize, dest: Option<&mut [i32]>, orig: &[i32]) -> Result<(), StrError> {
+        unsafe {
+            let status = match dest {
+                Some(d) => {
+                    let size = self.size()?;
+                    if d.len() != size * orig.len() {
+                        return Err("dest.len() must equal the number of processors times orig.len()");
+                    }
+                    comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::I32.n())
+                }
+                None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::I32.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather i32 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn gather_i64(&mut self, root: usize, dest: Option<&mut [i64]>, orig: &[i64]) -> Result<(), StrError> {
+        unsafe {
+            let status = match dest {
+                Some(d) => {
+                    let size = self.size()?;
+                    if d.len() != size * orig.len() {
+                        return Err("dest.len() must equal the number of processors times orig.len()");
+                    }
+                    comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::I64.n())
+                }
+                None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::I64.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather i64 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn gather_u32(&mut self, root: usize, dest: Option<&mut [u32]>, orig: &[u32]) -> Result<(), StrError> {
+        unsafe {
+            let status = match dest {
+                Some(d) => {
+                    let size = self.size()?;
+                    if d.len() != size * orig.len() {
+                        return Err("dest.len() must equal the number of processors times orig.len()");
+                    }
+                    comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n())
+                }
+                None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::U32.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather u32 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn gather_u64(&mut self, root: usize, dest: Option<&mut [u64]>, orig: &[u64]) -> Result<(), StrError> {
+        unsafe {
+            let status = match dest {
+                Some(d) => {
+                    let size = self.size()?;
+                    if d.len() != size * orig.len() {
+                        return Err("dest.len() must equal the number of processors times orig.len()");
+                    }
+                    comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n())
+                }
+                None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::U64.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather u64 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    pub fn gather_usize(&mut self, root: usize, dest: Option<&mut [usize]>, orig: &[usize]) -> Result<(), StrError> {
+        unsafe {
+            let status = match dest {
+                Some(d) => {
+                    let size = self.size()?;
+                    if d.len() != size * orig.len() {
+                        return Err("dest.len() must equal the number of processors times orig.len()");
+                    }
+                    comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n())
+                }
+                None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::U64.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather usize arrays");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "32")]
+    pub fn xgather_usize(&mut self, root: usize, dest: Option<&mut [usize]>, orig: &[usize]) -> Result<(), StrError> {
+        unsafe {
+            let status = match dest {
+                Some(d) => {
+                    let size = self.size()?;
+                    if d.len() != size * orig.len() {
+                        return Err("dest.len() must equal the number of processors times orig.len()");
+                    }
+                    comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n())
+                }
+                None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::U32.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather usize arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn gather_f32(&mut self, root: usize, dest: Option<&mut [f32]>, orig: &[f32]) -> Result<(), StrError> {
+        unsafe {
+            let status = match dest {
+                Some(d) => {
+                    let size = self.size()?;
+                    if d.len() != size * orig.len() {
+                        return Err("dest.len() must equal the number of processors times orig.len()");
+                    }
+                    comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F32.n())
+                }
+                None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::F32.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather f32 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn gather_f64(&mut self, root: usize, dest: Option<&mut [f64]>, orig: &[f64]) -> Result<(), StrError> {
+        unsafe {
+            let status = match dest {
+                Some(d) => {
+                    let size = self.size()?;
+                    if d.len() != size * orig.len() {
+                        return Err("dest.len() must equal the number of processors times orig.len()");
+                    }
+                    comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F64.n())
+                }
+                None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::F64.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather f64 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    // allgather -------------------------------------------------------------------------------------------
+
+    pub fn allgather_i32(&mut self, dest: &mut [i32], orig: &[i32]) -> Result<(), StrError> {
+        let size = self.size()?;
+        if dest.len() != size * orig.len() {
+            return Err("dest.len() must equal the number of processors times orig.len()");
+        }
+        unsafe {
+            let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::I32.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather i32 arrays");
             }
         }
         Ok(())

@@ -5,7 +5,10 @@
 
 #include "constants.h"
 
+// References:
 // https://www.open-mpi.org/doc/v4.1/
+// https://rookiehpc.org/mpi/docs/mpi_gather/index.html
+// https://mpitutorial.com/tutorials/mpi-scatter-gather-and-allgather/
 
 int32_t c_mpi_init() {
     int status = MPI_Init(NULL, NULL); // initializes the MPI execution environment
@@ -165,4 +168,26 @@ void comm_get_receive_status(struct ExtCommunicator *comm, int32_t *source, int3
     *source = comm->recv_status.MPI_SOURCE;
     *tag = comm->recv_status.MPI_TAG;
     *error = comm->recv_status.MPI_ERROR;
+}
+
+// len(dest) must be equal to n * n_processors
+// len(orig) must be equal to n
+int32_t comm_gather_im_root(struct ExtCommunicator *comm, int32_t root, int32_t n, void *dest, void const *orig, int32_t type_index) {
+    MPI_Datatype dty = C_MPI_TYPES[type_index];
+    int status = MPI_Gather(orig, n, dty, dest, n, dty, root, comm->handle); // gathers values from a group of processes.
+    return status;
+}
+
+int32_t comm_gather_im_not_root(struct ExtCommunicator *comm, int32_t root, int32_t n, void const *orig, int32_t type_index) {
+    MPI_Datatype dty = C_MPI_TYPES[type_index];
+    int status = MPI_Gather(orig, n, dty, NULL, 0, dty, root, comm->handle); // gathers values from a group of processes.
+    return status;
+}
+
+// len(dest) must be equal to n * n_processors
+// len(orig) must be equal to n
+int32_t comm_allgather(struct ExtCommunicator *comm, int32_t n, void *dest, void const *orig, int32_t type_index) {
+    MPI_Datatype dty = C_MPI_TYPES[type_index];
+    int status = MPI_Allgather(orig, n, dty, dest, n, dty, comm->handle); // gathers data from all processes
+    return status;
 }
