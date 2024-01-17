@@ -12,7 +12,6 @@ fn main() {
             .compile("c_code_interface_mpi"); // compile
         println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu/");
         println!("cargo:rustc-link-lib=dylib=mpich");
-        println!("cargo:rerun-if-changed=c_code/interface_mpi.c");
     } else {
         cc::Build::new()
             .file("c_code/interface_mpi.c") // file
@@ -20,6 +19,7 @@ fn main() {
             .compile("c_code_interface_mpi"); // compile
         println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu/openmpi");
         println!("cargo:rustc-link-lib=dylib=mpi");
-        println!("cargo:rerun-if-changed=c_code/interface_mpi.c");
     }
+    println!("cargo:rerun-if-changed=c_code/constants.h");
+    println!("cargo:rerun-if-changed=c_code/interface_mpi.c");
 }

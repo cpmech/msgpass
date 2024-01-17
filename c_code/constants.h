@@ -14,13 +14,15 @@ const int C_MPI_THREAD_OPTIONS[4] = {
     MPI_THREAD_MULTIPLE,   //  3  if the process is multithreaded, multiple threads may call MPI at once with no restrictions
 };
 
-const MPI_Datatype C_MPI_TYPES[6] = {
-    MPI_INT32_T,  //  0  i32
-    MPI_INT64_T,  //  1  i64
-    MPI_UINT32_T, //  2  u32
-    MPI_UINT64_T, //  3  u64
-    MPI_FLOAT,    //  4  f32
-    MPI_DOUBLE,   //  5  f64
+const MPI_Datatype C_MPI_TYPES[8] = {
+    MPI_INT32_T,          //  0  i32
+    MPI_INT64_T,          //  1  i64
+    MPI_UINT32_T,         //  2  u32
+    MPI_UINT64_T,         //  3  u64
+    MPI_FLOAT,            //  4  f32
+    MPI_DOUBLE,           //  5  f64
+    MPI_C_FLOAT_COMPLEX,  //  6  c32
+    MPI_C_DOUBLE_COMPLEX, //  7  c64
 };
 
 const MPI_Op C_MPI_OPS[7] = {
