@@ -31,8 +31,10 @@ extern "C" {
     fn comm_receive(comm: *mut ExtCommunicator, n: i32, data: *mut c_void, type_index: i32, from_rank: i32, tag: i32) -> i32;
     fn comm_get_receive_status(comm: *mut ExtCommunicator, source: *mut i32, tag: *mut i32, error: *mut i32);
     fn comm_gather_im_root(comm: *mut ExtCommunicator, root: i32, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32) -> i32;
-    fn comm_allgather(comm: *mut ExtCommunicator, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32) -> i32;
     fn comm_gather_im_not_root(comm: *mut ExtCommunicator, root: i32, n: i32, orig: *const c_void, type_index: i32) -> i32;
+    fn comm_allgather(comm: *mut ExtCommunicator, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32) -> i32;
+    fn comm_scatter_im_root(comm: *mut ExtCommunicator, root: i32, n: i32, dest: *mut c_void, orig: *const c_void, type_index: i32) -> i32;
+    fn comm_scatter_im_not_root(comm: *mut ExtCommunicator, root: i32, n: i32, dest: *mut c_void, type_index: i32) -> i32;
 }
 
 /// Initializes the MPI execution environment
@@ -1017,6 +1019,162 @@ impl Communicator {
             let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F64.n());
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to gather f64 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    // scatter -------------------------------------------------------------------------------------------
+
+    pub fn scatter_i32(&mut self, root: usize, dest: &mut [i32], orig: Option<&[i32]>) -> Result<(), StrError> {
+        unsafe {
+            let status = match orig {
+                Some(o) => {
+                    let size = self.size()?;
+                    if o.len() != size * dest.len() {
+                        return Err("orig.len() must equal the number of processors times dest.len()");
+                    }
+                    comm_scatter_im_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_mut_ptr() as *mut c_void, o.as_ptr() as *const c_void, MpiType::I32.n())
+                }
+                None => comm_scatter_im_not_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_ptr() as *mut c_void, MpiType::I32.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to scatter i32 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn scatter_i64(&mut self, root: usize, dest: &mut [i64], orig: Option<&[i64]>) -> Result<(), StrError> {
+        unsafe {
+            let status = match orig {
+                Some(o) => {
+                    let size = self.size()?;
+                    if o.len() != size * dest.len() {
+                        return Err("orig.len() must equal the number of processors times dest.len()");
+                    }
+                    comm_scatter_im_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_mut_ptr() as *mut c_void, o.as_ptr() as *const c_void, MpiType::I64.n())
+                }
+                None => comm_scatter_im_not_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_ptr() as *mut c_void, MpiType::I64.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to scatter i64 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn scatter_u32(&mut self, root: usize, dest: &mut [u32], orig: Option<&[u32]>) -> Result<(), StrError> {
+        unsafe {
+            let status = match orig {
+                Some(o) => {
+                    let size = self.size()?;
+                    if o.len() != size * dest.len() {
+                        return Err("orig.len() must equal the number of processors times dest.len()");
+                    }
+                    comm_scatter_im_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_mut_ptr() as *mut c_void, o.as_ptr() as *const c_void, MpiType::U32.n())
+                }
+                None => comm_scatter_im_not_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_ptr() as *mut c_void, MpiType::U32.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to scatter u32 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn scatter_u64(&mut self, root: usize, dest: &mut [u64], orig: Option<&[u64]>) -> Result<(), StrError> {
+        unsafe {
+            let status = match orig {
+                Some(o) => {
+                    let size = self.size()?;
+                    if o.len() != size * dest.len() {
+                        return Err("orig.len() must equal the number of processors times dest.len()");
+                    }
+                    comm_scatter_im_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_mut_ptr() as *mut c_void, o.as_ptr() as *const c_void, MpiType::U64.n())
+                }
+                None => comm_scatter_im_not_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_ptr() as *mut c_void, MpiType::U64.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to scatter u64 array");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "32")]
+    pub fn scatter_usize(&mut self, root: usize, dest: &mut [usize], orig: Option<&[usize]>) -> Result<(), StrError> {
+        unsafe {
+            let status = match orig {
+                Some(o) => {
+                    let size = self.size()?;
+                    if o.len() != size * dest.len() {
+                        return Err("orig.len() must equal the number of processors times dest.len()");
+                    }
+                    comm_scatter_im_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_mut_ptr() as *mut c_void, o.as_ptr() as *const c_void, MpiType::U32.n())
+                }
+                None => comm_scatter_im_not_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_ptr() as *mut c_void, MpiType::U32.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to scatter usize array");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    pub fn scatter_usize(&mut self, root: usize, dest: &mut [usize], orig: Option<&[usize]>) -> Result<(), StrError> {
+        unsafe {
+            let status = match orig {
+                Some(o) => {
+                    let size = self.size()?;
+                    if o.len() != size * dest.len() {
+                        return Err("orig.len() must equal the number of processors times dest.len()");
+                    }
+                    comm_scatter_im_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_mut_ptr() as *mut c_void, o.as_ptr() as *const c_void, MpiType::U64.n())
+                }
+                None => comm_scatter_im_not_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_ptr() as *mut c_void, MpiType::U64.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to scatter usize array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn scatter_f32(&mut self, root: usize, dest: &mut [f32], orig: Option<&[f32]>) -> Result<(), StrError> {
+        unsafe {
+            let status = match orig {
+                Some(o) => {
+                    let size = self.size()?;
+                    if o.len() != size * dest.len() {
+                        return Err("orig.len() must equal the number of processors times dest.len()");
+                    }
+                    comm_scatter_im_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_mut_ptr() as *mut c_void, o.as_ptr() as *const c_void, MpiType::F32.n())
+                }
+                None => comm_scatter_im_not_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_ptr() as *mut c_void, MpiType::F32.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to scatter f32 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn scatter_f64(&mut self, root: usize, dest: &mut [f64], orig: Option<&[f64]>) -> Result<(), StrError> {
+        unsafe {
+            let status = match orig {
+                Some(o) => {
+                    let size = self.size()?;
+                    if o.len() != size * dest.len() {
+                        return Err("orig.len() must equal the number of processors times dest.len()");
+                    }
+                    comm_scatter_im_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_mut_ptr() as *mut c_void, o.as_ptr() as *const c_void, MpiType::F64.n())
+                }
+                None => comm_scatter_im_not_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_ptr() as *mut c_void, MpiType::F64.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to scatter f64 array");
             }
         }
         Ok(())

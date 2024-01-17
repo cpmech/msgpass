@@ -191,3 +191,18 @@ int32_t comm_allgather(struct ExtCommunicator *comm, int32_t n, void *dest, void
     int status = MPI_Allgather(orig, n, dty, dest, n, dty, comm->handle); // gathers data from all processes
     return status;
 }
+
+// len(dest) must be equal to n
+// len(orig) must be equal to n * n_processors
+int32_t comm_scatter_im_root(struct ExtCommunicator *comm, int32_t root, int32_t n, void *dest, void const *orig, int32_t type_index) {
+    MPI_Datatype dty = C_MPI_TYPES[type_index];
+    int status = MPI_Scatter(orig, n, dty, dest, n, dty, root, comm->handle); // sends data from one task to all tasks in a group
+    return status;
+}
+
+// len(dest) must be equal to n
+int32_t comm_scatter_im_not_root(struct ExtCommunicator *comm, int32_t root, int32_t n, void *dest, int32_t type_index) {
+    MPI_Datatype dty = C_MPI_TYPES[type_index];
+    int status = MPI_Scatter(NULL, 0, dty, dest, n, dty, root, comm->handle); // sends data from one task to all tasks in a group
+    return status;
+}
