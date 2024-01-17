@@ -1,4 +1,5 @@
 use msgpass::*;
+use num_complex::{Complex32, Complex64};
 
 fn main() -> Result<(), StrError> {
     mpi_init()?;
@@ -14,6 +15,8 @@ fn main() -> Result<(), StrError> {
     let mut x_usz = vec![0_usize; size];
     let mut x_f32 = vec![0_f32; size];
     let mut x_f64 = vec![0_f64; size];
+    let mut x_c32 = vec![Complex32::new(0.0, 0.0); size];
+    let mut x_c64 = vec![Complex64::new(0.0, 0.0); size];
 
     let mut correct_i32 = x_i32.clone();
     let mut correct_i64 = x_i64.clone();
@@ -22,6 +25,8 @@ fn main() -> Result<(), StrError> {
     let mut correct_usz = x_usz.clone();
     let mut correct_f32 = x_f32.clone();
     let mut correct_f64 = x_f64.clone();
+    let mut correct_c32 = x_c32.clone();
+    let mut correct_c64 = x_c64.clone();
 
     // correct
     for i in 0..size {
@@ -32,6 +37,8 @@ fn main() -> Result<(), StrError> {
         correct_usz[i] = 1000 + i;
         correct_f32[i] = 1000.0 + (i as f32);
         correct_f64[i] = 1000.0 + (i as f64);
+        correct_c32[i] = Complex32::new(1000.0 + (i as f32), 1000.0 + (i as f32));
+        correct_c64[i] = Complex64::new(1000.0 + (i as f64), 1000.0 + (i as f64));
     }
 
     if rank == 0 {
@@ -42,6 +49,8 @@ fn main() -> Result<(), StrError> {
         x_usz = correct_usz.clone();
         x_f32 = correct_f32.clone();
         x_f64 = correct_f64.clone();
+        x_c32 = correct_c32.clone();
+        x_c64 = correct_c64.clone();
     }
 
     comm.broadcast_i32(0, &mut x_i32)?;
@@ -51,6 +60,8 @@ fn main() -> Result<(), StrError> {
     comm.broadcast_usize(0, &mut x_usz)?;
     comm.broadcast_f32(0, &mut x_f32)?;
     comm.broadcast_f64(0, &mut x_f64)?;
+    comm.broadcast_c32(0, &mut x_c32)?;
+    comm.broadcast_c64(0, &mut x_c64)?;
 
     mpi_finalize()?;
 
@@ -61,6 +72,8 @@ fn main() -> Result<(), StrError> {
     assert_eq!(&x_usz, &correct_usz);
     assert_eq!(&x_f32, &correct_f32);
     assert_eq!(&x_f64, &correct_f64);
+    assert_eq!(&x_c32, &correct_c32);
+    assert_eq!(&x_c64, &correct_c64);
 
     if rank == 0 {
         println!("... success ...");

@@ -1,4 +1,5 @@
 use msgpass::*;
+use num_complex::{Complex32, Complex64};
 
 // See figure in https://mpitutorial.com/tutorials/mpi-scatter-gather-and-allgather/
 
@@ -18,6 +19,8 @@ fn main() -> Result<(), StrError> {
     let mut y_usz = vec![0_usize; N];
     let mut y_f32 = vec![0_f32; N];
     let mut y_f64 = vec![0_f64; N];
+    let mut y_c32 = vec![Complex32::new(0.0, 0.0); N];
+    let mut y_c64 = vec![Complex64::new(0.0, 0.0); N];
 
     if rank == 0 {
         let mut x_i32 = vec![0_i32; N * size];
@@ -27,6 +30,8 @@ fn main() -> Result<(), StrError> {
         let mut x_usz = vec![0_usize; N * size];
         let mut x_f32 = vec![0_f32; N * size];
         let mut x_f64 = vec![0_f64; N * size];
+        let mut x_c32 = vec![Complex32::new(0.0, 0.0); N * size];
+        let mut x_c64 = vec![Complex64::new(0.0, 0.0); N * size];
         for j in 0..size {
             for i in 0..N {
                 let n = i + N * j;
@@ -37,6 +42,8 @@ fn main() -> Result<(), StrError> {
                 x_usz[n] = 1000 + j;
                 x_f32[n] = 1000.0 + (j as f32);
                 x_f64[n] = 1000.0 + (j as f64);
+                x_c32[n] = Complex32::new(1000.0 + (j as f32), 1000.0 + (j as f32));
+                x_c64[n] = Complex64::new(1000.0 + (j as f64), 1000.0 + (j as f64));
             }
         }
         comm.scatter_i32(0, &mut y_i32, Some(&x_i32))?;
@@ -46,6 +53,8 @@ fn main() -> Result<(), StrError> {
         comm.scatter_usize(0, &mut y_usz, Some(&x_usz))?;
         comm.scatter_f32(0, &mut y_f32, Some(&x_f32))?;
         comm.scatter_f64(0, &mut y_f64, Some(&x_f64))?;
+        comm.scatter_c32(0, &mut y_c32, Some(&x_c32))?;
+        comm.scatter_c64(0, &mut y_c64, Some(&x_c64))?;
     } else {
         comm.scatter_i32(0, &mut y_i32, None)?;
         comm.scatter_i64(0, &mut y_i64, None)?;
@@ -54,6 +63,8 @@ fn main() -> Result<(), StrError> {
         comm.scatter_usize(0, &mut y_usz, None)?;
         comm.scatter_f32(0, &mut y_f32, None)?;
         comm.scatter_f64(0, &mut y_f64, None)?;
+        comm.scatter_c32(0, &mut y_c32, None)?;
+        comm.scatter_c64(0, &mut y_c64, None)?;
     }
 
     let mut correct_i32 = vec![0_i32; N];
@@ -63,6 +74,8 @@ fn main() -> Result<(), StrError> {
     let mut correct_usz = vec![0_usize; N];
     let mut correct_f32 = vec![0_f32; N];
     let mut correct_f64 = vec![0_f64; N];
+    let mut correct_c32 = vec![Complex32::new(0.0, 0.0); N];
+    let mut correct_c64 = vec![Complex64::new(0.0, 0.0); N];
     for i in 0..N {
         correct_i32[i] = 1000 + (rank as i32);
         correct_i64[i] = 1000 + (rank as i64);
@@ -71,6 +84,8 @@ fn main() -> Result<(), StrError> {
         correct_usz[i] = 1000 + rank;
         correct_f32[i] = 1000.0 + (rank as f32);
         correct_f64[i] = 1000.0 + (rank as f64);
+        correct_c32[i] = Complex32::new(1000.0 + (rank as f32), 1000.0 + (rank as f32));
+        correct_c64[i] = Complex64::new(1000.0 + (rank as f64), 1000.0 + (rank as f64));
     }
     assert_eq!(&y_i32, &correct_i32);
     assert_eq!(&y_i64, &correct_i64);
@@ -79,6 +94,8 @@ fn main() -> Result<(), StrError> {
     assert_eq!(&y_usz, &correct_usz);
     assert_eq!(&y_f32, &correct_f32);
     assert_eq!(&y_f64, &correct_f64);
+    assert_eq!(&y_c32, &correct_c32);
+    assert_eq!(&y_c64, &correct_c64);
 
     mpi_finalize()?;
 
