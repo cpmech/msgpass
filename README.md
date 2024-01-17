@@ -83,9 +83,9 @@ use msgpass::*;
 fn main() -> Result<(), StrError> {
     mpi_init()?;
 
-    let rank = mpi_world_rank()?;
-    let size = mpi_world_size()?;
     let mut comm = Communicator::new()?;
+    let rank = comm.rank()?;
+    let size = comm.size()?;
 
     const ROOT: i32 = 0;
     const TAG: i32 = 70;
@@ -122,7 +122,8 @@ Running the code above with `mpiexec -np 4 ex_send_receive` (see `run-examples.b
     - [x] Initialize and finalize
     - [x] Abort and barrier
 - [ ] Wrap more MPI functions
-    - [x] Implement reduce
-    - [x] Implement allreduce
     - [x] Implement send/receive
-    - [ ] Implement scatter/gather
+    - [x] Implement reduce/allreduce
+    - [x] Implement scatter/gather/allgather
+    - [ ] more...
+- [ ] Handle complex numbers

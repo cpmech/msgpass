@@ -29,9 +29,9 @@ fn monte_carlo_points_in_circle() -> usize {
 fn main() -> Result<(), StrError> {
     mpi_init_thread(MpiThread::Serialized)?;
 
-    let rank = mpi_world_rank()?;
-    let size = mpi_world_size()?;
     let mut comm = Communicator::new()?;
+    let rank = comm.rank()?;
+    let size = comm.size()?;
 
     let in_circle = monte_carlo_points_in_circle();
     println!("{}: π ≈ {}", rank, 4.0 * (in_circle as f64) / (SAMPLES as f64));
