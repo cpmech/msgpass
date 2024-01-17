@@ -1,0 +1,15 @@
+name: Test on Linux with Intel MPI
+on: [pull_request]
+jobs:
+  test_on_linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install libraries
+        run: |
+          bash zscripts/install-intel-mpi-debian.bash
+      - name: Run tests
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          export MSGPASS_USE_INTEL_MPI=1
+          bash run-tests.bash
