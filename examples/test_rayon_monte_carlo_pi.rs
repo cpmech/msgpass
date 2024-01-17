@@ -38,7 +38,7 @@ fn main() -> Result<(), StrError> {
 
     let my_in_circle = [in_circle];
     let mut in_circle_sum = [0_usize];
-    comm.reduce_usize(0, &mut in_circle_sum, &my_in_circle, MpiOp::Sum)?;
+    comm.reduce_usize(0, &mut in_circle_sum, &my_in_circle, MpiOpInt::Sum)?;
 
     if rank == 0 {
         let total = SAMPLES * size;

@@ -317,7 +317,7 @@ impl Communicator {
     // reduce -----------------------------------------------------------------------------------------
 
     /// Reduces values on all processes within a group
-    pub fn reduce_i32(&mut self, root: usize, dest: &mut [i32], orig: &[i32], op: MpiOp) -> Result<(), StrError> {
+    pub fn reduce_i32(&mut self, root: usize, dest: &mut [i32], orig: &[i32], op: MpiOpInt) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -331,7 +331,7 @@ impl Communicator {
     }
 
     /// Reduces values on all processes within a group
-    pub fn reduce_i64(&mut self, root: usize, dest: &mut [i64], orig: &[i64], op: MpiOp) -> Result<(), StrError> {
+    pub fn reduce_i64(&mut self, root: usize, dest: &mut [i64], orig: &[i64], op: MpiOpInt) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -345,7 +345,7 @@ impl Communicator {
     }
 
     /// Reduces values on all processes within a group
-    pub fn reduce_u32(&mut self, root: usize, dest: &mut [u32], orig: &[u32], op: MpiOp) -> Result<(), StrError> {
+    pub fn reduce_u32(&mut self, root: usize, dest: &mut [u32], orig: &[u32], op: MpiOpInt) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -359,7 +359,7 @@ impl Communicator {
     }
 
     /// Reduces values on all processes within a group
-    pub fn reduce_u64(&mut self, root: usize, dest: &mut [u64], orig: &[u64], op: MpiOp) -> Result<(), StrError> {
+    pub fn reduce_u64(&mut self, root: usize, dest: &mut [u64], orig: &[u64], op: MpiOpInt) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -374,7 +374,7 @@ impl Communicator {
 
     /// Reduces values on all processes within a group
     #[cfg(target_pointer_width = "32")]
-    pub fn reduce_usize(&mut self, root: usize, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
+    pub fn reduce_usize(&mut self, root: usize, dest: &mut [usize], orig: &[usize], op: MpiOpInt) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -389,7 +389,7 @@ impl Communicator {
 
     /// Reduces values on all processes within a group
     #[cfg(target_pointer_width = "64")]
-    pub fn reduce_usize(&mut self, root: usize, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
+    pub fn reduce_usize(&mut self, root: usize, dest: &mut [usize], orig: &[usize], op: MpiOpInt) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -403,7 +403,7 @@ impl Communicator {
     }
 
     /// Reduces values on all processes within a group
-    pub fn reduce_f32(&mut self, root: usize, dest: &mut [f32], orig: &[f32], op: MpiOpx) -> Result<(), StrError> {
+    pub fn reduce_f32(&mut self, root: usize, dest: &mut [f32], orig: &[f32], op: MpiOpReal) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -417,7 +417,7 @@ impl Communicator {
     }
 
     /// Reduces values on all processes within a group
-    pub fn reduce_f64(&mut self, root: usize, dest: &mut [f64], orig: &[f64], op: MpiOpx) -> Result<(), StrError> {
+    pub fn reduce_f64(&mut self, root: usize, dest: &mut [f64], orig: &[f64], op: MpiOpReal) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -430,10 +430,38 @@ impl Communicator {
         Ok(())
     }
 
+    /// Reduces values on all processes within a group
+    pub fn reduce_c32(&mut self, root: usize, dest: &mut [Complex32], orig: &[Complex32], op: MpiOpComplex) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::C32.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to reduce Complex32 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Reduces values on all processes within a group
+    pub fn reduce_c64(&mut self, root: usize, dest: &mut [Complex64], orig: &[Complex64], op: MpiOpComplex) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::C64.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to reduce Complex64 array");
+            }
+        }
+        Ok(())
+    }
+
     // allreduce -----------------------------------------------------------------------------------------
 
     /// Combines values from all processes and distributes the result back to all processes
-    pub fn allreduce_i32(&mut self, dest: &mut [i32], orig: &[i32], op: MpiOp) -> Result<(), StrError> {
+    pub fn allreduce_i32(&mut self, dest: &mut [i32], orig: &[i32], op: MpiOpInt) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -447,7 +475,7 @@ impl Communicator {
     }
 
     /// Combines values from all processes and distributes the result back to all processes
-    pub fn allreduce_i64(&mut self, dest: &mut [i64], orig: &[i64], op: MpiOp) -> Result<(), StrError> {
+    pub fn allreduce_i64(&mut self, dest: &mut [i64], orig: &[i64], op: MpiOpInt) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -461,7 +489,7 @@ impl Communicator {
     }
 
     /// Combines values from all processes and distributes the result back to all processes
-    pub fn allreduce_u32(&mut self, dest: &mut [u32], orig: &[u32], op: MpiOp) -> Result<(), StrError> {
+    pub fn allreduce_u32(&mut self, dest: &mut [u32], orig: &[u32], op: MpiOpInt) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -475,7 +503,7 @@ impl Communicator {
     }
 
     /// Combines values from all processes and distributes the result back to all processes
-    pub fn allreduce_u64(&mut self, dest: &mut [u64], orig: &[u64], op: MpiOp) -> Result<(), StrError> {
+    pub fn allreduce_u64(&mut self, dest: &mut [u64], orig: &[u64], op: MpiOpInt) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -490,7 +518,7 @@ impl Communicator {
 
     /// Combines values from all processes and distributes the result back to all processes
     #[cfg(target_pointer_width = "32")]
-    pub fn allreduce_usize(&mut self, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
+    pub fn allreduce_usize(&mut self, dest: &mut [usize], orig: &[usize], op: MpiOpInt) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -505,7 +533,7 @@ impl Communicator {
 
     /// Combines values from all processes and distributes the result back to all processes
     #[cfg(target_pointer_width = "64")]
-    pub fn allreduce_usize(&mut self, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
+    pub fn allreduce_usize(&mut self, dest: &mut [usize], orig: &[usize], op: MpiOpInt) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -519,7 +547,7 @@ impl Communicator {
     }
 
     /// Combines values from all processes and distributes the result back to all processes
-    pub fn allreduce_f32(&mut self, dest: &mut [f32], orig: &[f32], op: MpiOpx) -> Result<(), StrError> {
+    pub fn allreduce_f32(&mut self, dest: &mut [f32], orig: &[f32], op: MpiOpReal) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -533,7 +561,7 @@ impl Communicator {
     }
 
     /// Combines values from all processes and distributes the result back to all processes
-    pub fn allreduce_f64(&mut self, dest: &mut [f64], orig: &[f64], op: MpiOpx) -> Result<(), StrError> {
+    pub fn allreduce_f64(&mut self, dest: &mut [f64], orig: &[f64], op: MpiOpReal) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
@@ -541,6 +569,34 @@ impl Communicator {
             let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F64.n(), op.n());
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to (all) reduce f64 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Combines values from all processes and distributes the result back to all processes
+    pub fn allreduce_c32(&mut self, dest: &mut [Complex32], orig: &[Complex32], op: MpiOpComplex) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::C32.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to (all) reduce Complex32 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Combines values from all processes and distributes the result back to all processes
+    pub fn allreduce_c64(&mut self, dest: &mut [Complex64], orig: &[Complex64], op: MpiOpComplex) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::C64.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to (all) reduce Complex64 array");
             }
         }
         Ok(())
@@ -646,6 +702,28 @@ impl Communicator {
             let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::F64.n(), to_i32(to_rank), tag);
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to send f64 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Performs a standard-mode blocking send
+    pub fn send_c32(&mut self, data: &[Complex32], to_rank: usize, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::C32.n(), to_i32(to_rank), tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to send Complex32 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Performs a standard-mode blocking send
+    pub fn send_c64(&mut self, data: &[Complex64], to_rank: usize, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::C64.n(), to_i32(to_rank), tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to send Complex64 array");
             }
         }
         Ok(())
@@ -770,6 +848,36 @@ impl Communicator {
             let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::F64.n(), from_rank, tag);
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to receive f64 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Performs a standard-mode blocking receive
+    ///
+    /// `data` -- Buffer to store the received data
+    /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
+    /// `tag` -- Tag of the message (a negative value corresponds to MPI_ANY_TAG)
+    pub fn receive_c32(&mut self, data: &mut [Complex32], from_rank: i32, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::C32.n(), from_rank, tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to receive Complex32 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Performs a standard-mode blocking receive
+    ///
+    /// `data` -- Buffer to store the received data
+    /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
+    /// `tag` -- Tag of the message (a negative value corresponds to MPI_ANY_TAG)
+    pub fn receive_c64(&mut self, data: &mut [Complex64], from_rank: i32, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::C64.n(), from_rank, tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to receive Complex64 array");
             }
         }
         Ok(())
@@ -931,6 +1039,44 @@ impl Communicator {
         Ok(())
     }
 
+    pub fn gather_c32(&mut self, root: usize, dest: Option<&mut [Complex32]>, orig: &[Complex32]) -> Result<(), StrError> {
+        unsafe {
+            let status = match dest {
+                Some(d) => {
+                    let size = self.size()?;
+                    if d.len() != size * orig.len() {
+                        return Err("dest.len() must equal the number of processors times orig.len()");
+                    }
+                    comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::C32.n())
+                }
+                None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::C32.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather Complex32 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn gather_c64(&mut self, root: usize, dest: Option<&mut [Complex64]>, orig: &[Complex64]) -> Result<(), StrError> {
+        unsafe {
+            let status = match dest {
+                Some(d) => {
+                    let size = self.size()?;
+                    if d.len() != size * orig.len() {
+                        return Err("dest.len() must equal the number of processors times orig.len()");
+                    }
+                    comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::C64.n())
+                }
+                None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::C64.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather Complex64 arrays");
+            }
+        }
+        Ok(())
+    }
+
     // allgather -------------------------------------------------------------------------------------------
 
     pub fn allgather_i32(&mut self, dest: &mut [i32], orig: &[i32]) -> Result<(), StrError> {
@@ -1042,6 +1188,34 @@ impl Communicator {
             let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F64.n());
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to gather f64 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn allgather_c32(&mut self, dest: &mut [Complex32], orig: &[Complex32]) -> Result<(), StrError> {
+        let size = self.size()?;
+        if dest.len() != size * orig.len() {
+            return Err("dest.len() must equal the number of processors times orig.len()");
+        }
+        unsafe {
+            let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::C32.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather Complex32 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn allgather_c64(&mut self, dest: &mut [Complex64], orig: &[Complex64]) -> Result<(), StrError> {
+        let size = self.size()?;
+        if dest.len() != size * orig.len() {
+            return Err("dest.len() must equal the number of processors times orig.len()");
+        }
+        unsafe {
+            let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::C64.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather Complex64 arrays");
             }
         }
         Ok(())
@@ -1198,6 +1372,44 @@ impl Communicator {
             };
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to scatter f64 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn scatter_c32(&mut self, root: usize, dest: &mut [Complex32], orig: Option<&[Complex32]>) -> Result<(), StrError> {
+        unsafe {
+            let status = match orig {
+                Some(o) => {
+                    let size = self.size()?;
+                    if o.len() != size * dest.len() {
+                        return Err("orig.len() must equal the number of processors times dest.len()");
+                    }
+                    comm_scatter_im_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_mut_ptr() as *mut c_void, o.as_ptr() as *const c_void, MpiType::C32.n())
+                }
+                None => comm_scatter_im_not_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_ptr() as *mut c_void, MpiType::C32.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to scatter Complex32 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn scatter_c64(&mut self, root: usize, dest: &mut [Complex64], orig: Option<&[Complex64]>) -> Result<(), StrError> {
+        unsafe {
+            let status = match orig {
+                Some(o) => {
+                    let size = self.size()?;
+                    if o.len() != size * dest.len() {
+                        return Err("orig.len() must equal the number of processors times dest.len()");
+                    }
+                    comm_scatter_im_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_mut_ptr() as *mut c_void, o.as_ptr() as *const c_void, MpiType::C64.n())
+                }
+                None => comm_scatter_im_not_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_ptr() as *mut c_void, MpiType::C64.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to scatter Complex64 array");
             }
         }
         Ok(())

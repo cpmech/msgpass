@@ -30,11 +30,11 @@ fn main() -> Result<(), StrError> {
     let mut y_u64 = vec![0_u64; N];
     let mut y_usz = vec![0_usize; N];
 
-    comm.reduce_i32(0, &mut y_i32, &x_i32, MpiOp::Lor)?;
-    comm.reduce_i64(0, &mut y_i64, &x_i64, MpiOp::Lor)?;
-    comm.reduce_u32(0, &mut y_u32, &x_u32, MpiOp::Lor)?;
-    comm.reduce_u64(0, &mut y_u64, &x_u64, MpiOp::Lor)?;
-    comm.reduce_usize(0, &mut y_usz, &x_usz, MpiOp::Lor)?;
+    comm.reduce_i32(0, &mut y_i32, &x_i32, MpiOpInt::Lor)?;
+    comm.reduce_i64(0, &mut y_i64, &x_i64, MpiOpInt::Lor)?;
+    comm.reduce_u32(0, &mut y_u32, &x_u32, MpiOpInt::Lor)?;
+    comm.reduce_u64(0, &mut y_u64, &x_u64, MpiOpInt::Lor)?;
+    comm.reduce_usize(0, &mut y_usz, &x_usz, MpiOpInt::Lor)?;
 
     if rank == 0 {
         let mut correct_i32 = vec![0_i32; N];

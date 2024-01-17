@@ -36,13 +36,13 @@ fn main() -> Result<(), StrError> {
     let mut y_f32 = vec![0_f32; N];
     let mut y_f64 = vec![0_f64; N];
 
-    comm.allreduce_i32(&mut y_i32, &x_i32, MpiOp::Min)?;
-    comm.allreduce_i64(&mut y_i64, &x_i64, MpiOp::Min)?;
-    comm.allreduce_u32(&mut y_u32, &x_u32, MpiOp::Min)?;
-    comm.allreduce_u64(&mut y_u64, &x_u64, MpiOp::Min)?;
-    comm.allreduce_usize(&mut y_usz, &x_usz, MpiOp::Min)?;
-    comm.allreduce_f32(&mut y_f32, &x_f32, MpiOpx::Min)?;
-    comm.allreduce_f64(&mut y_f64, &x_f64, MpiOpx::Min)?;
+    comm.allreduce_i32(&mut y_i32, &x_i32, MpiOpInt::Min)?;
+    comm.allreduce_i64(&mut y_i64, &x_i64, MpiOpInt::Min)?;
+    comm.allreduce_u32(&mut y_u32, &x_u32, MpiOpInt::Min)?;
+    comm.allreduce_u64(&mut y_u64, &x_u64, MpiOpInt::Min)?;
+    comm.allreduce_usize(&mut y_usz, &x_usz, MpiOpInt::Min)?;
+    comm.allreduce_f32(&mut y_f32, &x_f32, MpiOpReal::Min)?;
+    comm.allreduce_f64(&mut y_f64, &x_f64, MpiOpReal::Min)?;
 
     let mut correct_i32 = vec![0_i32; N];
     let mut correct_i64 = vec![0_i64; N];

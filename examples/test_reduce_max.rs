@@ -37,13 +37,13 @@ fn main() -> Result<(), StrError> {
     let mut y_f32 = vec![0_f32; N];
     let mut y_f64 = vec![0_f64; N];
 
-    comm.reduce_i32(0, &mut y_i32, &x_i32, MpiOp::Max)?;
-    comm.reduce_i64(0, &mut y_i64, &x_i64, MpiOp::Max)?;
-    comm.reduce_u32(0, &mut y_u32, &x_u32, MpiOp::Max)?;
-    comm.reduce_u64(0, &mut y_u64, &x_u64, MpiOp::Max)?;
-    comm.reduce_usize(0, &mut y_usz, &x_usz, MpiOp::Max)?;
-    comm.reduce_f32(0, &mut y_f32, &x_f32, MpiOpx::Max)?;
-    comm.reduce_f64(0, &mut y_f64, &x_f64, MpiOpx::Max)?;
+    comm.reduce_i32(0, &mut y_i32, &x_i32, MpiOpInt::Max)?;
+    comm.reduce_i64(0, &mut y_i64, &x_i64, MpiOpInt::Max)?;
+    comm.reduce_u32(0, &mut y_u32, &x_u32, MpiOpInt::Max)?;
+    comm.reduce_u64(0, &mut y_u64, &x_u64, MpiOpInt::Max)?;
+    comm.reduce_usize(0, &mut y_usz, &x_usz, MpiOpInt::Max)?;
+    comm.reduce_f32(0, &mut y_f32, &x_f32, MpiOpReal::Max)?;
+    comm.reduce_f64(0, &mut y_f64, &x_f64, MpiOpReal::Max)?;
 
     if rank == 0 {
         let mut correct_i32 = vec![0_i32; N];

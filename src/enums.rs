@@ -48,7 +48,7 @@ pub(crate) enum MpiType {
 
 /// Specifies the MPI operator used in reduce-like functions (for integer arrays)
 #[derive(Clone, Copy)]
-pub enum MpiOp {
+pub enum MpiOpInt {
     Max = 0,  // maximum
     Min = 1,  // minimum
     Sum = 2,  // sum
@@ -58,11 +58,18 @@ pub enum MpiOp {
     Lxor = 6, // logical xor
 }
 
-/// Specifies the MPI operator used in reduce-like functions (for float number arrays)
+/// Specifies the MPI operator used in reduce-like functions (for real number arrays)
 #[derive(Clone, Copy)]
-pub enum MpiOpx {
+pub enum MpiOpReal {
     Max = 0,  // maximum
     Min = 1,  // minimum
+    Sum = 2,  // sum
+    Prod = 3, // product
+}
+
+/// Specifies the MPI operator used in reduce-like functions (for complex number arrays)
+#[derive(Clone, Copy)]
+pub enum MpiOpComplex {
     Sum = 2,  // sum
     Prod = 3, // product
 }
@@ -79,13 +86,19 @@ impl MpiType {
     }
 }
 
-impl MpiOp {
+impl MpiOpInt {
     pub(crate) fn n(&self) -> i32 {
         *self as i32
     }
 }
 
-impl MpiOpx {
+impl MpiOpReal {
+    pub(crate) fn n(&self) -> i32 {
+        *self as i32
+    }
+}
+
+impl MpiOpComplex {
     pub(crate) fn n(&self) -> i32 {
         *self as i32
     }
