@@ -3,9 +3,9 @@ use msgpass::*;
 fn main() -> Result<(), StrError> {
     mpi_init()?;
 
-    let rank = mpi_world_rank()?;
-    let size = mpi_world_size()?;
     let mut comm = Communicator::new()?;
+    let rank = comm.rank()?;
+    let size = comm.size()?;
 
     let mut x_i32 = vec![0_i32; size];
     let mut x_i64 = vec![0_i64; size];

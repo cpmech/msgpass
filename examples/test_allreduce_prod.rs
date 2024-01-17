@@ -7,9 +7,9 @@ pub fn factorial(num: usize) -> usize {
 fn main() -> Result<(), StrError> {
     mpi_init()?;
 
-    let rank = mpi_world_rank()?;
-    let size = mpi_world_size()?;
     let mut comm = Communicator::new()?;
+    let rank = comm.rank()?;
+    let size = comm.size()?;
 
     const N: usize = 3;
 

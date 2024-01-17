@@ -3,8 +3,8 @@ use msgpass::*;
 fn main() -> Result<(), StrError> {
     mpi_init()?;
 
-    let rank = mpi_world_rank()?;
     let mut comm = Communicator::new()?;
+    let rank = comm.rank()?;
 
     const N: usize = 3;
 
