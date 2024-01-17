@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 use msgpass::*;
 
 fn main() -> Result<(), StrError> {
