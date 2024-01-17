@@ -1,8 +1,9 @@
 # Thin wrapper to a Message Passing Interface (MPI)
 
 [![Documentation](https://docs.rs/msgpass/badge.svg)](https://docs.rs/msgpass)
-[![Test on Linux](https://github.com/cpmech/msgpass/actions/workflows/test_on_linux.yml/badge.svg)](https://github.com/cpmech/msgpass/actions/workflows/test_on_linux.yml)
 [![Test on macOS](https://github.com/cpmech/msgpass/actions/workflows/test_on_macos.yml/badge.svg)](https://github.com/cpmech/msgpass/actions/workflows/test_on_macos.yml)
+[![Test on Linux](https://github.com/cpmech/msgpass/actions/workflows/test_on_linux.yml/badge.svg)](https://github.com/cpmech/msgpass/actions/workflows/test_on_linux.yml)
+[![Test on Linux with Intel MPI](https://github.com/cpmech/msgpass/actions/workflows/test_on_linux_intel_mpi.yml/badge.svg)](https://github.com/cpmech/msgpass/actions/workflows/test_on_linux_intel_mpi.yml)
 
 ## Contents
 
