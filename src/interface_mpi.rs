@@ -1415,3 +1415,19 @@ impl Communicator {
         Ok(())
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[cfg(test)]
+mod tests {
+    use super::{mpi_finalize, mpi_init, Communicator};
+
+    #[test]
+    fn essential_features_work() {
+        mpi_init().unwrap();
+        let mut comm = Communicator::new().unwrap();
+        assert_eq!(comm.rank().unwrap(), 0);
+        assert_eq!(comm.size().unwrap(), 1);
+        mpi_finalize().unwrap();
+    }
+}

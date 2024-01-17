@@ -9,6 +9,7 @@
     "mpiexec",
     "msgpass",
     "nrank",
+    "oneapi",
     "openmpi"
   ]
 }
