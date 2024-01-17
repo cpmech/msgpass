@@ -244,10 +244,10 @@ impl Communicator {
     }
 
     /// Broadcasts a message from sender to all other processes in the group
-    #[cfg(target_pointer_width = "64")]
+    #[cfg(target_pointer_width = "32")]
     pub fn broadcast_usize(&mut self, sender: usize, x: &mut [usize]) -> Result<(), StrError> {
         unsafe {
-            let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::U64.n());
+            let status = comm_broadcast(self.ext_comm, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::U32.n());
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to broadcast usize array");
             }
@@ -256,10 +256,10 @@ impl Communicator {
     }
 
     /// Broadcasts a message from sender to all other processes in the group
-    #[cfg(target_pointer_width = "32")]
+    #[cfg(target_pointer_width = "64")]
     pub fn broadcast_usize(&mut self, sender: usize, x: &mut [usize]) -> Result<(), StrError> {
         unsafe {
-            let status = comm_broadcast(self.ext_comm, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::U32.n());
+            let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::U64.n());
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to broadcast usize array");
             }
@@ -348,13 +348,13 @@ impl Communicator {
     }
 
     /// Reduces values on all processes within a group
-    #[cfg(target_pointer_width = "64")]
+    #[cfg(target_pointer_width = "32")]
     pub fn reduce_usize(&mut self, root: usize, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
         unsafe {
-            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n(), op.n());
+            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n(), op.n());
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to reduce usize array");
             }
@@ -363,13 +363,13 @@ impl Communicator {
     }
 
     /// Reduces values on all processes within a group
-    #[cfg(target_pointer_width = "32")]
+    #[cfg(target_pointer_width = "64")]
     pub fn reduce_usize(&mut self, root: usize, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
         unsafe {
-            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n(), op.n());
+            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n(), op.n());
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to reduce usize array");
             }
@@ -464,13 +464,13 @@ impl Communicator {
     }
 
     /// Combines values from all processes and distributes the result back to all processes
-    #[cfg(target_pointer_width = "64")]
+    #[cfg(target_pointer_width = "32")]
     pub fn allreduce_usize(&mut self, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
         unsafe {
-            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n(), op.n());
+            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n(), op.n());
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to (all) reduce usize array");
             }
@@ -479,13 +479,13 @@ impl Communicator {
     }
 
     /// Combines values from all processes and distributes the result back to all processes
-    #[cfg(target_pointer_width = "32")]
+    #[cfg(target_pointer_width = "64")]
     pub fn allreduce_usize(&mut self, dest: &mut [usize], orig: &[usize], op: MpiOp) -> Result<(), StrError> {
         if dest.len() != orig.len() {
             return Err("arrays must have the same size");
         }
         unsafe {
-            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n(), op.n());
+            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n(), op.n());
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to (all) reduce usize array");
             }
@@ -581,10 +581,10 @@ impl Communicator {
     }
 
     /// Performs a standard-mode blocking send
-    #[cfg(target_pointer_width = "64")]
+    #[cfg(target_pointer_width = "32")]
     pub fn send_usize(&mut self, data: &[usize], to_rank: usize, tag: i32) -> Result<(), StrError> {
         unsafe {
-            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::U64.n(), to_i32(to_rank), tag);
+            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::U32.n(), to_i32(to_rank), tag);
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to send usize array");
             }
@@ -593,10 +593,10 @@ impl Communicator {
     }
 
     /// Performs a standard-mode blocking send
-    #[cfg(target_pointer_width = "32")]
+    #[cfg(target_pointer_width = "64")]
     pub fn send_usize(&mut self, data: &[usize], to_rank: usize, tag: i32) -> Result<(), StrError> {
         unsafe {
-            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::U32.n(), to_i32(to_rank), tag);
+            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::U64.n(), to_i32(to_rank), tag);
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to send usize array");
             }
@@ -693,10 +693,10 @@ impl Communicator {
     /// `data` -- Buffer to store the received data
     /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
     /// `tag` -- Tag of the message (a negative value corresponds to MPI_ANY_TAG)
-    #[cfg(target_pointer_width = "64")]
+    #[cfg(target_pointer_width = "32")]
     pub fn receive_usize(&mut self, data: &mut [usize], from_rank: i32, tag: i32) -> Result<(), StrError> {
         unsafe {
-            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::U64.n(), from_rank, tag);
+            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::U32.n(), from_rank, tag);
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to receive usize array");
             }
@@ -709,10 +709,10 @@ impl Communicator {
     /// `data` -- Buffer to store the received data
     /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
     /// `tag` -- Tag of the message (a negative value corresponds to MPI_ANY_TAG)
-    #[cfg(target_pointer_width = "32")]
+    #[cfg(target_pointer_width = "64")]
     pub fn receive_usize(&mut self, data: &mut [usize], from_rank: i32, tag: i32) -> Result<(), StrError> {
         unsafe {
-            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::U32.n(), from_rank, tag);
+            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::U64.n(), from_rank, tag);
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to receive usize array");
             }
@@ -828,6 +828,26 @@ impl Communicator {
         Ok(())
     }
 
+    #[cfg(target_pointer_width = "32")]
+    pub fn gather_usize(&mut self, root: usize, dest: Option<&mut [usize]>, orig: &[usize]) -> Result<(), StrError> {
+        unsafe {
+            let status = match dest {
+                Some(d) => {
+                    let size = self.size()?;
+                    if d.len() != size * orig.len() {
+                        return Err("dest.len() must equal the number of processors times orig.len()");
+                    }
+                    comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n())
+                }
+                None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::U32.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather usize arrays");
+            }
+        }
+        Ok(())
+    }
+
     #[cfg(target_pointer_width = "64")]
     pub fn gather_usize(&mut self, root: usize, dest: Option<&mut [usize]>, orig: &[usize]) -> Result<(), StrError> {
         unsafe {
@@ -840,26 +860,6 @@ impl Communicator {
                     comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n())
                 }
                 None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::U64.n()),
-            };
-            if status != C_MPI_SUCCESS {
-                return Err("MPI failed to gather usize arrays");
-            }
-        }
-        Ok(())
-    }
-
-    #[cfg(target_pointer_width = "32")]
-    pub fn xgather_usize(&mut self, root: usize, dest: Option<&mut [usize]>, orig: &[usize]) -> Result<(), StrError> {
-        unsafe {
-            let status = match dest {
-                Some(d) => {
-                    let size = self.size()?;
-                    if d.len() != size * orig.len() {
-                        return Err("dest.len() must equal the number of processors times orig.len()");
-                    }
-                    comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n())
-                }
-                None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::U32.n()),
             };
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to gather usize arrays");
@@ -917,6 +917,106 @@ impl Communicator {
             let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::I32.n());
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to gather i32 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn allgather_i64(&mut self, dest: &mut [i64], orig: &[i64]) -> Result<(), StrError> {
+        let size = self.size()?;
+        if dest.len() != size * orig.len() {
+            return Err("dest.len() must equal the number of processors times orig.len()");
+        }
+        unsafe {
+            let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::I64.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather i64 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "32")]
+    pub fn allgather_usize(&mut self, dest: &mut [usize], orig: &[usize]) -> Result<(), StrError> {
+        let size = self.size()?;
+        if dest.len() != size * orig.len() {
+            return Err("dest.len() must equal the number of processors times orig.len()");
+        }
+        unsafe {
+            let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather usize arrays");
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    pub fn allgather_usize(&mut self, dest: &mut [usize], orig: &[usize]) -> Result<(), StrError> {
+        let size = self.size()?;
+        if dest.len() != size * orig.len() {
+            return Err("dest.len() must equal the number of processors times orig.len()");
+        }
+        unsafe {
+            let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather usize arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn allgather_u32(&mut self, dest: &mut [u32], orig: &[u32]) -> Result<(), StrError> {
+        let size = self.size()?;
+        if dest.len() != size * orig.len() {
+            return Err("dest.len() must equal the number of processors times orig.len()");
+        }
+        unsafe {
+            let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U32.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather u32 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn allgather_u64(&mut self, dest: &mut [u64], orig: &[u64]) -> Result<(), StrError> {
+        let size = self.size()?;
+        if dest.len() != size * orig.len() {
+            return Err("dest.len() must equal the number of processors times orig.len()");
+        }
+        unsafe {
+            let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::U64.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather u64 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn allgather_f32(&mut self, dest: &mut [f32], orig: &[f32]) -> Result<(), StrError> {
+        let size = self.size()?;
+        if dest.len() != size * orig.len() {
+            return Err("dest.len() must equal the number of processors times orig.len()");
+        }
+        unsafe {
+            let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F32.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather f32 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn allgather_f64(&mut self, dest: &mut [f64], orig: &[f64]) -> Result<(), StrError> {
+        let size = self.size()?;
+        if dest.len() != size * orig.len() {
+            return Err("dest.len() must equal the number of processors times orig.len()");
+        }
+        unsafe {
+            let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::F64.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather f64 arrays");
             }
         }
         Ok(())
