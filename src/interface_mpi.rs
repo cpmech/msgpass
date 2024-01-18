@@ -314,6 +314,17 @@ impl Communicator {
         Ok(())
     }
 
+    /// Broadcasts a message from sender to all other processes in the group
+    pub fn broadcast_bytes(&mut self, sender: usize, x: &mut [u8]) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_broadcast(self.handle, to_i32(sender), to_i32(x.len()), x.as_mut_ptr() as *mut c_void, MpiType::BYT.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to broadcast bytes array");
+            }
+        }
+        Ok(())
+    }
+
     // reduce -----------------------------------------------------------------------------------------
 
     /// Reduces values on all processes within a group

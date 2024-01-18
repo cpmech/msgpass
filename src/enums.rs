@@ -44,6 +44,7 @@ pub(crate) enum MpiType {
     F64 = 5,
     C32 = 6, // Complex32
     C64 = 7, // Complex64
+    BYT = 8, // u8 (Byte)
 }
 
 /// Specifies the MPI operator used in reduce-like functions (for integer arrays)
