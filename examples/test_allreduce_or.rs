@@ -31,11 +31,11 @@ fn main() -> Result<(), StrError> {
     let mut y_usz = vec![0_usize; N];
     let mut y_byt = vec![0_u8; N];
 
-    comm.allreduce_i32(&mut y_i32, &x_i32, MpiOpInt::Lor)?;
-    comm.allreduce_i64(&mut y_i64, &x_i64, MpiOpInt::Lor)?;
-    comm.allreduce_u32(&mut y_u32, &x_u32, MpiOpInt::Lor)?;
-    comm.allreduce_u64(&mut y_u64, &x_u64, MpiOpInt::Lor)?;
-    comm.allreduce_usize(&mut y_usz, &x_usz, MpiOpInt::Lor)?;
+    comm.allreduce_i32(&mut y_i32, &x_i32, MpiOpInt::Or)?;
+    comm.allreduce_i64(&mut y_i64, &x_i64, MpiOpInt::Or)?;
+    comm.allreduce_u32(&mut y_u32, &x_u32, MpiOpInt::Or)?;
+    comm.allreduce_u64(&mut y_u64, &x_u64, MpiOpInt::Or)?;
+    comm.allreduce_usize(&mut y_usz, &x_usz, MpiOpInt::Or)?;
     comm.allreduce_bytes(&mut y_byt, &x_byt, MpiOpByte::Or)?;
 
     let mut correct_i32 = vec![0_i32; N];

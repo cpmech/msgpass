@@ -54,9 +54,9 @@ pub enum MpiOpInt {
     Min = 1,  // minimum
     Sum = 2,  // sum
     Prod = 3, // product
-    Land = 4, // logical and
-    Lor = 5,  // logical or
-    Lxor = 6, // logical xor
+    And = 4,  // logical and
+    Or = 5,   // logical or
+    Xor = 6,  // logical xor
 }
 
 /// Specifies the MPI operator used in reduce-like functions (for real number arrays)
