@@ -19,6 +19,7 @@ fn main() -> Result<(), StrError> {
     let mut x_f64 = vec![0_f64; N];
     let mut x_c32 = vec![Complex32::new(0.0, 0.0); N];
     let mut x_c64 = vec![Complex64::new(0.0, 0.0); N];
+    let mut x_byt = vec![0_u8; N];
 
     for i in 0..N {
         x_i32[i] = 1000 + (rank as i32);
@@ -30,6 +31,7 @@ fn main() -> Result<(), StrError> {
         x_f64[i] = 1000.0 + (rank as f64);
         x_c32[i] = Complex32::new(1000.0 + (rank as f32), 1000.0 + (rank as f32));
         x_c64[i] = Complex64::new(1000.0 + (rank as f64), 1000.0 + (rank as f64));
+        x_byt[i] = rank as u8;
     }
 
     if rank == 0 {
@@ -42,6 +44,7 @@ fn main() -> Result<(), StrError> {
         let mut y_f64 = vec![0_f64; N * size];
         let mut y_c32 = vec![Complex32::new(0.0, 0.0); N * size];
         let mut y_c64 = vec![Complex64::new(0.0, 0.0); N * size];
+        let mut y_byt = vec![0_u8; N * size];
 
         comm.gather_i32(0, Some(&mut y_i32), &x_i32)?;
         comm.gather_i64(0, Some(&mut y_i64), &x_i64)?;
@@ -52,6 +55,7 @@ fn main() -> Result<(), StrError> {
         comm.gather_f64(0, Some(&mut y_f64), &x_f64)?;
         comm.gather_c32(0, Some(&mut y_c32), &x_c32)?;
         comm.gather_c64(0, Some(&mut y_c64), &x_c64)?;
+        comm.gather_bytes(0, Some(&mut y_byt), &x_byt)?;
 
         let mut correct_i32 = vec![0_i32; N * size];
         let mut correct_i64 = vec![0_i64; N * size];
@@ -62,6 +66,7 @@ fn main() -> Result<(), StrError> {
         let mut correct_f64 = vec![0_f64; N * size];
         let mut correct_c32 = vec![Complex32::new(0.0, 0.0); N * size];
         let mut correct_c64 = vec![Complex64::new(0.0, 0.0); N * size];
+        let mut correct_byt = vec![0_u8; N * size];
         for j in 0..size {
             for i in 0..N {
                 let n = i + N * j;
@@ -74,6 +79,7 @@ fn main() -> Result<(), StrError> {
                 correct_f64[n] = 1000.0 + (j as f64);
                 correct_c32[n] = Complex32::new(1000.0 + (j as f32), 1000.0 + (j as f32));
                 correct_c64[n] = Complex64::new(1000.0 + (j as f64), 1000.0 + (j as f64));
+                correct_byt[n] = j as u8;
             }
         }
         assert_eq!(&y_i32, &correct_i32);
@@ -85,6 +91,7 @@ fn main() -> Result<(), StrError> {
         assert_eq!(&y_f64, &correct_f64);
         assert_eq!(&y_c32, &correct_c32);
         assert_eq!(&y_c64, &correct_c64);
+        assert_eq!(&y_byt, &correct_byt);
     } else {
         comm.gather_i32(0, None, &x_i32)?;
         comm.gather_i64(0, None, &x_i64)?;
@@ -95,6 +102,7 @@ fn main() -> Result<(), StrError> {
         comm.gather_f64(0, None, &x_f64)?;
         comm.gather_c32(0, None, &x_c32)?;
         comm.gather_c64(0, None, &x_c64)?;
+        comm.gather_bytes(0, None, &x_byt)?;
     }
 
     mpi_finalize()?;

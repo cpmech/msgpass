@@ -44,6 +44,7 @@ pub(crate) enum MpiType {
     F64 = 5,
     C32 = 6, // Complex32
     C64 = 7, // Complex64
+    BYT = 8, // u8 (Byte)
 }
 
 /// Specifies the MPI operator used in reduce-like functions (for integer arrays)
@@ -53,9 +54,9 @@ pub enum MpiOpInt {
     Min = 1,  // minimum
     Sum = 2,  // sum
     Prod = 3, // product
-    Land = 4, // logical and
-    Lor = 5,  // logical or
-    Lxor = 6, // logical xor
+    And = 4,  // logical and
+    Or = 5,   // logical or
+    Xor = 6,  // logical xor
 }
 
 /// Specifies the MPI operator used in reduce-like functions (for real number arrays)
@@ -72,6 +73,14 @@ pub enum MpiOpReal {
 pub enum MpiOpComplex {
     Sum = 2,  // sum
     Prod = 3, // product
+}
+
+/// Specifies the MPI operator used in reduce-like functions (for byte arrays)
+#[derive(Clone, Copy)]
+pub enum MpiOpByte {
+    And = 7, // bitwise and
+    Or = 8,  // bitwise or
+    Xor = 9, // bitwise xor
 }
 
 impl MpiThread {
@@ -99,6 +108,12 @@ impl MpiOpReal {
 }
 
 impl MpiOpComplex {
+    pub(crate) fn n(&self) -> i32 {
+        *self as i32
+    }
+}
+
+impl MpiOpByte {
     pub(crate) fn n(&self) -> i32 {
         *self as i32
     }

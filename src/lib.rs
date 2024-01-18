@@ -5,5 +5,6 @@ mod constants;
 mod conversion;
 mod enums;
 mod interface_mpi;
+pub use crate::conversion::*;
 pub use crate::enums::*;
 pub use crate::interface_mpi::*;

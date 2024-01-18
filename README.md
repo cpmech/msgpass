@@ -24,6 +24,14 @@ We try to test all functions as much as possible, but test coverage could be bet
 
 - [![Documentation](https://docs.rs/msgpass/badge.svg)](https://docs.rs/msgpass)
 
+**Note:** We can communicate strings by converting them to an array of bytes. For instance:
+
+```rust
+let mut bytes = vec![0_u8; MAX];
+str_to_bytes(&mut bytes, "Hello World 😊");
+comm.broadcast_bytes(0, &mut bytes)?;
+```
+
 ## <a name="installation"></a> Installation on Debian/Ubuntu/Linux
 
 On **Ubuntu/Linux**, install OpenMPI, MPICH, or Intel MPI. For instance,

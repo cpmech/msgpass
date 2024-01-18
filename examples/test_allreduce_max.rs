@@ -27,8 +27,6 @@ fn main() -> Result<(), StrError> {
         x_f64[i] = rank as f64 + 1.0;
     }
 
-    // println!("{}: x = {:?}", rank, x_i32);
-
     let mut y_i32 = vec![0_i32; N];
     let mut y_i64 = vec![0_i64; N];
     let mut y_u32 = vec![0_u32; N];

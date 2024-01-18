@@ -1,6 +1,14 @@
 use msgpass::*;
 use num_complex::{Complex32, Complex64};
 
+// Processor 0 says hell
+// 123456789012345678901
+const GREETING_LEN1: usize = 21;
+
+// Processor 0 says hello 😊
+// 12345678901234567890123??
+const GREETING_LEN2: usize = 40;
+
 fn main() -> Result<(), StrError> {
     mpi_init()?;
 
@@ -17,6 +25,8 @@ fn main() -> Result<(), StrError> {
     let mut x_f64 = vec![0_f64; size];
     let mut x_c32 = vec![Complex32::new(0.0, 0.0); size];
     let mut x_c64 = vec![Complex64::new(0.0, 0.0); size];
+    let mut x_bt1 = vec![0_u8; GREETING_LEN1];
+    let mut x_bt2 = vec![0_u8; GREETING_LEN2];
 
     let mut correct_i32 = x_i32.clone();
     let mut correct_i64 = x_i64.clone();
@@ -51,6 +61,8 @@ fn main() -> Result<(), StrError> {
         x_f64 = correct_f64.clone();
         x_c32 = correct_c32.clone();
         x_c64 = correct_c64.clone();
+        str_to_bytes(&mut x_bt1, "Processor 0 says hello 😊");
+        str_to_bytes(&mut x_bt2, "Processor 0 says hello 😊");
     }
 
     comm.broadcast_i32(0, &mut x_i32)?;
@@ -62,6 +74,8 @@ fn main() -> Result<(), StrError> {
     comm.broadcast_f64(0, &mut x_f64)?;
     comm.broadcast_c32(0, &mut x_c32)?;
     comm.broadcast_c64(0, &mut x_c64)?;
+    comm.broadcast_bytes(0, &mut x_bt1)?;
+    comm.broadcast_bytes(0, &mut x_bt2)?;
 
     mpi_finalize()?;
 
@@ -74,6 +88,8 @@ fn main() -> Result<(), StrError> {
     assert_eq!(&x_f64, &correct_f64);
     assert_eq!(&x_c32, &correct_c32);
     assert_eq!(&x_c64, &correct_c64);
+    assert_eq!(bytes_to_string_lossy(&x_bt1), "Processor 0 says hell");
+    assert_eq!(bytes_to_string_lossy(&x_bt2), "Processor 0 says hello 😊");
 
     if rank == 0 {
         println!("... success ...");
