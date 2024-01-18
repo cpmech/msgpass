@@ -4,7 +4,8 @@
       "name": "Linux",
       "includePath": [
         "${default}",
-        "/usr/lib/x86_64-linux-gnu/openmpi/include/"
+        "/usr/lib/x86_64-linux-gnu/openmpi/include/",
+        "/opt/intel/oneapi/mpi/latest/include/"
       ],
       "compilerPath": "/usr/bin/gcc",
       "cStandard": "c17",
