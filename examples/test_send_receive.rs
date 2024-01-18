@@ -19,7 +19,7 @@ fn main() -> Result<(), StrError> {
     let mut x_f64 = vec![0_f64; N];
     let mut x_c32 = vec![Complex32::new(0.0, 0.0); N];
     let mut x_c64 = vec![Complex64::new(0.0, 0.0); N];
-
+    let x_byt = vec![240, 159, 146, 150];
     for i in 0..N {
         x_i32[i] = 1000 + (i as i32);
         x_i64[i] = 1000 + (i as i64);
@@ -41,6 +41,7 @@ fn main() -> Result<(), StrError> {
     let mut y_f64 = vec![0_f64; N];
     let mut y_c32 = vec![Complex32::new(0.0, 0.0); N];
     let mut y_c64 = vec![Complex64::new(0.0, 0.0); N];
+    let mut y_byt = vec![0_u8; x_byt.len()];
 
     const TAG_I32: i32 = 10;
     const TAG_I64: i32 = 20;
@@ -51,6 +52,7 @@ fn main() -> Result<(), StrError> {
     const TAG_F64: i32 = 70;
     const TAG_C32: i32 = 80;
     const TAG_C64: i32 = 90;
+    const TAG_BYT: i32 = 100;
 
     if rank == 0 {
         for to in 1..size {
@@ -63,6 +65,7 @@ fn main() -> Result<(), StrError> {
             comm.send_f64(&x_f64, to, TAG_F64)?;
             comm.send_c32(&x_c32, to, TAG_C32)?;
             comm.send_c64(&x_c64, to, TAG_C64)?;
+            comm.send_bytes(&x_byt, to, TAG_BYT)?;
         }
     } else {
         comm.receive_i32(&mut y_i32, 0, TAG_I32)?;
@@ -109,6 +112,12 @@ fn main() -> Result<(), StrError> {
         assert_eq!(&y_c64, &x_c64);
         let res = comm.get_receive_status();
         assert_eq!(res, (0, TAG_C64, 0));
+
+        comm.receive_bytes(&mut y_byt, 0, TAG_BYT)?;
+        assert_eq!(&y_byt, &x_byt);
+        let res = comm.get_receive_status();
+        assert_eq!(res, (0, TAG_BYT, 0));
+        assert_eq!(bytes_to_string_lossy(&y_byt), "💖");
     }
 
     mpi_finalize()?;

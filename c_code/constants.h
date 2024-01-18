@@ -26,7 +26,7 @@ const MPI_Datatype C_MPI_TYPES[9] = {
     MPI_BYTE,             //  8  u8
 };
 
-const MPI_Op C_MPI_OPS[7] = {
+const MPI_Op C_MPI_OPS[10] = {
     MPI_MAX,  //  0  maximum
     MPI_MIN,  //  1  minimum
     MPI_SUM,  //  2  sum
@@ -34,6 +34,9 @@ const MPI_Op C_MPI_OPS[7] = {
     MPI_LAND, //  4  logical and
     MPI_LOR,  //  5  logical or
     MPI_LXOR, //  6  logical xor
+    MPI_BAND, //  7  bitwise and
+    MPI_BOR,  //  8  bitwise or
+    MPI_BXOR, //  9  bitwise xor
 };
 
 #endif // CONSTANTS_H

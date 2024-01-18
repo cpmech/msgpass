@@ -469,6 +469,20 @@ impl Communicator {
         Ok(())
     }
 
+    /// Reduces values on all processes within a group
+    pub fn reduce_bytes(&mut self, root: usize, dest: &mut [u8], orig: &[u8], op: MpiOpByte) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_reduce(self.handle, to_i32(root), to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::BYT.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to reduce bytes array");
+            }
+        }
+        Ok(())
+    }
+
     // allreduce -----------------------------------------------------------------------------------------
 
     /// Combines values from all processes and distributes the result back to all processes
@@ -613,6 +627,20 @@ impl Communicator {
         Ok(())
     }
 
+    /// Combines values from all processes and distributes the result back to all processes
+    pub fn allreduce_bytes(&mut self, dest: &mut [u8], orig: &[u8], op: MpiOpByte) -> Result<(), StrError> {
+        if dest.len() != orig.len() {
+            return Err("arrays must have the same size");
+        }
+        unsafe {
+            let status = comm_allreduce(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::BYT.n(), op.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to (all) reduce bytes array");
+            }
+        }
+        Ok(())
+    }
+
     // getters -------------------------------------------------------------------------------------------
 
     /// Returns the status of the last receive call
@@ -735,6 +763,17 @@ impl Communicator {
             let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::C64.n(), to_i32(to_rank), tag);
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to send Complex64 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Performs a standard-mode blocking send
+    pub fn send_bytes(&mut self, data: &[u8], to_rank: usize, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_send(self.handle, to_i32(data.len()), data.as_ptr() as *const c_void, MpiType::BYT.n(), to_i32(to_rank), tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to send bytes array");
             }
         }
         Ok(())
@@ -889,6 +928,21 @@ impl Communicator {
             let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::C64.n(), from_rank, tag);
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to receive Complex64 array");
+            }
+        }
+        Ok(())
+    }
+
+    /// Performs a standard-mode blocking receive
+    ///
+    /// `data` -- Buffer to store the received data
+    /// `from_rank` -- Rank from where the data was sent (a negative value corresponds to MPI_ANY_SOURCE)
+    /// `tag` -- Tag of the message (a negative value corresponds to MPI_ANY_TAG)
+    pub fn receive_bytes(&mut self, data: &mut [u8], from_rank: i32, tag: i32) -> Result<(), StrError> {
+        unsafe {
+            let status = comm_receive(self.handle, to_i32(data.len()), data.as_mut_ptr() as *mut c_void, MpiType::BYT.n(), from_rank, tag);
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to receive bytes array");
             }
         }
         Ok(())
@@ -1088,6 +1142,25 @@ impl Communicator {
         Ok(())
     }
 
+    pub fn gather_bytes(&mut self, root: usize, dest: Option<&mut [u8]>, orig: &[u8]) -> Result<(), StrError> {
+        unsafe {
+            let status = match dest {
+                Some(d) => {
+                    let size = self.size()?;
+                    if d.len() != size * orig.len() {
+                        return Err("dest.len() must equal the number of processors times orig.len()");
+                    }
+                    comm_gather_im_root(self.handle, to_i32(root), to_i32(orig.len()), d.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::BYT.n())
+                }
+                None => comm_gather_im_not_root(self.handle, to_i32(root), to_i32(orig.len()), orig.as_ptr() as *const c_void, MpiType::BYT.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather bytes arrays");
+            }
+        }
+        Ok(())
+    }
+
     // allgather -------------------------------------------------------------------------------------------
 
     pub fn allgather_i32(&mut self, dest: &mut [i32], orig: &[i32]) -> Result<(), StrError> {
@@ -1227,6 +1300,20 @@ impl Communicator {
             let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::C64.n());
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to gather Complex64 arrays");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn allgather_bytes(&mut self, dest: &mut [u8], orig: &[u8]) -> Result<(), StrError> {
+        let size = self.size()?;
+        if dest.len() != size * orig.len() {
+            return Err("dest.len() must equal the number of processors times orig.len()");
+        }
+        unsafe {
+            let status = comm_allgather(self.handle, to_i32(orig.len()), dest.as_mut_ptr() as *mut c_void, orig.as_ptr() as *const c_void, MpiType::BYT.n());
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to gather bytes arrays");
             }
         }
         Ok(())
@@ -1421,6 +1508,25 @@ impl Communicator {
             };
             if status != C_MPI_SUCCESS {
                 return Err("MPI failed to scatter Complex64 array");
+            }
+        }
+        Ok(())
+    }
+
+    pub fn scatter_bytes(&mut self, root: usize, dest: &mut [u8], orig: Option<&[u8]>) -> Result<(), StrError> {
+        unsafe {
+            let status = match orig {
+                Some(o) => {
+                    let size = self.size()?;
+                    if o.len() != size * dest.len() {
+                        return Err("orig.len() must equal the number of processors times dest.len()");
+                    }
+                    comm_scatter_im_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_mut_ptr() as *mut c_void, o.as_ptr() as *const c_void, MpiType::BYT.n())
+                }
+                None => comm_scatter_im_not_root(self.handle, to_i32(root), to_i32(dest.len()), dest.as_ptr() as *mut c_void, MpiType::BYT.n()),
+            };
+            if status != C_MPI_SUCCESS {
+                return Err("MPI failed to scatter bytes array");
             }
         }
         Ok(())

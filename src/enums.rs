@@ -75,6 +75,14 @@ pub enum MpiOpComplex {
     Prod = 3, // product
 }
 
+/// Specifies the MPI operator used in reduce-like functions (for byte arrays)
+#[derive(Clone, Copy)]
+pub enum MpiOpByte {
+    And = 7, // bitwise and
+    Or = 8,  // bitwise or
+    Xor = 9, // bitwise xor
+}
+
 impl MpiThread {
     pub(crate) fn n(&self) -> i32 {
         *self as i32
@@ -100,6 +108,12 @@ impl MpiOpReal {
 }
 
 impl MpiOpComplex {
+    pub(crate) fn n(&self) -> i32 {
+        *self as i32
+    }
+}
+
+impl MpiOpByte {
     pub(crate) fn n(&self) -> i32 {
         *self as i32
     }
