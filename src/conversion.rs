@@ -20,12 +20,13 @@ pub fn str_to_bytes(dest: &mut [u8], src: &str) {
 
 /// Converts a vector of bytes to string
 pub fn bytes_to_string(bytes: Vec<u8>) -> Result<String, StrError> {
-    String::from_utf8(bytes).map_err(|_| "cannot convert bytes to UTF-8 string")
+    let res = String::from_utf8(bytes).map_err(|_| "cannot convert bytes to UTF-8 string")?;
+    Ok(res.trim_end_matches('\0').to_string())
 }
 
 /// Converts a vector of bytes to string (replace invalid parts with �)
 pub fn bytes_to_string_lossy(bytes: &[u8]) -> String {
-    String::from_utf8_lossy(bytes).to_string()
+    String::from_utf8_lossy(bytes).trim_end_matches('\0').to_string()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +85,13 @@ mod tests {
 
     #[test]
     fn bytes_to_string_works() {
+        const EXTRA: u8 = 0;
+
         let sparkle_heart = vec![240, 159, 146, 150];
+        let sparkle_heart = bytes_to_string(sparkle_heart).unwrap();
+        assert_eq!("💖", sparkle_heart);
+
+        let sparkle_heart = vec![240, 159, 146, 150, EXTRA, EXTRA, EXTRA, EXTRA];
         let sparkle_heart = bytes_to_string(sparkle_heart).unwrap();
         assert_eq!("💖", sparkle_heart);
 
@@ -94,7 +101,13 @@ mod tests {
 
     #[test]
     fn bytes_to_string_lossy_works() {
+        const EXTRA: u8 = 0;
+
         let sparkle_heart = &[240, 159, 146, 150];
+        let sparkle_heart = bytes_to_string_lossy(sparkle_heart);
+        assert_eq!("💖", sparkle_heart);
+
+        let sparkle_heart = &[240, 159, 146, 150, EXTRA, EXTRA, EXTRA, EXTRA];
         let sparkle_heart = bytes_to_string_lossy(sparkle_heart);
         assert_eq!("💖", sparkle_heart);
 
