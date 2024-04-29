@@ -19,6 +19,13 @@ fn main() {
         println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu/");
         println!("cargo:rustc-link-lib=dylib=mpich");
     } else if use_intel_mpi {
+        let intel_setvars_completed = match env::var("SETVARS_COMPLETED") {
+            Ok(v) => v == "1",
+            Err(_) => false,
+        };
+        if !intel_setvars_completed {
+            panic!("\n\nBUILD ERROR: Intel setvars.sh need to be sourced first.\nYou must execute the following command (just once):\nsource /opt/intel/oneapi/setvars.sh\n\n")
+        }
         cc::Build::new()
             .file("c_code/interface_mpi.c") // file
             .include("/opt/intel/oneapi/mpi/latest/include/") // include
