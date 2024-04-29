@@ -7,14 +7,19 @@
 
 ## Contents
 
-* [Introduction](#introduction)
-* [Installation on Debian/Ubuntu/Linux](#installation)
-* [Installation on macOS](#macos)
-* [Setting Cargo.toml](#cargo)
-* [Examples](#examples)
-* [Todo list](#todo)
+- [Thin wrapper to a Message Passing Interface (MPI)](#thin-wrapper-to-a-message-passing-interface-mpi)
+  - [Contents](#contents)
+  - [Introduction](#introduction)
+  - [Installation on Debian/Ubuntu/Linux](#installation-on-debianubuntulinux)
+  - [Installation on macOS](#installation-on-macos)
+  - [Setting Cargo.toml](#setting-cargotoml)
+  - [Examples](#examples)
+  - [Todo list](#todo-list)
+- [Issues](#issues)
 
-## <a name="introduction"></a> Introduction
+
+
+## Introduction
 
 MsgPass (Message Passing) is a thin Rust wrapper to MPI. We consider a small subset of MPI functions. This subset will grow as our projects require more functionality. We implement (by hand) C functions that Rust can easily call using the FFI (in the `c_code` directory).
 
@@ -32,7 +37,9 @@ str_to_bytes(&mut bytes, "Hello World 😊");
 comm.broadcast_bytes(0, &mut bytes)?;
 ```
 
-## <a name="installation"></a> Installation on Debian/Ubuntu/Linux
+
+
+## Installation on Debian/Ubuntu/Linux
 
 On **Ubuntu/Linux**, install OpenMPI, MPICH, or Intel MPI. For instance,
 
@@ -65,7 +72,9 @@ source /opt/intel/oneapi/setvars.sh
 export MSGPASS_USE_INTEL_MPI=1
 ```
 
-## <a name="macos"></a> Installation on macOS
+
+
+## Installation on macOS
 
 On **macOS**, install the following packages:
 
@@ -80,7 +89,9 @@ Also, export the following environment variable:
 export echo TMPDIR=/tmp
 ```
 
-## <a name="cargo"></a> Setting Cargo.toml
+
+
+## Setting Cargo.toml
 
 [![Crates.io](https://img.shields.io/crates/v/msgpass.svg)](https://crates.io/crates/msgpass)
 
@@ -91,7 +102,9 @@ export echo TMPDIR=/tmp
 msgpass = "*"
 ```
 
-## <a name="examples"></a> Examples
+
+
+## Examples
 
 See also:
 
@@ -138,7 +151,9 @@ Running the code above with `mpiexec -np 4 ex_send_receive` (see `run-examples.b
 1: y = [1.0, 2.0, 3.0]
 ```
 
-## <a name="todo"></a> Todo list
+
+
+## Todo list
 
 - [x] Implement basic functionality
     - [x] Initialize and finalize
@@ -148,3 +163,9 @@ Running the code above with `mpiexec -np 4 ex_send_receive` (see `run-examples.b
     - [x] Implement reduce/allreduce
     - [x] Implement scatter/gather/allgather
 - [x] Handle complex numbers
+
+
+
+# Issues
+
+There seem to be an issue with Intel MPI 2012.12
