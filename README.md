@@ -1,28 +1,30 @@
-# Thin wrapper to a Message Passing Interface (MPI)
+# Thin wrapper to a Message Passing Interface (MPI) <!-- omit from toc -->
 
-[![Documentation](https://docs.rs/msgpass/badge.svg)](https://docs.rs/msgpass)
 [![Test on macOS](https://github.com/cpmech/msgpass/actions/workflows/test_on_macos.yml/badge.svg)](https://github.com/cpmech/msgpass/actions/workflows/test_on_macos.yml)
 [![Test on Linux](https://github.com/cpmech/msgpass/actions/workflows/test_on_linux.yml/badge.svg)](https://github.com/cpmech/msgpass/actions/workflows/test_on_linux.yml)
 [![Test on Linux with Intel MPI](https://github.com/cpmech/msgpass/actions/workflows/test_on_linux_intel_mpi.yml/badge.svg)](https://github.com/cpmech/msgpass/actions/workflows/test_on_linux_intel_mpi.yml)
 
-## Contents
+[![documentation](https://img.shields.io/badge/msgpass-documentation-blue)](https://docs.rs/msgpass)
 
-* [Introduction](#introduction)
-* [Installation on Debian/Ubuntu/Linux](#installation)
-* [Installation on macOS](#macos)
-* [Setting Cargo.toml](#cargo)
-* [Examples](#examples)
-* [Todo list](#todo)
+## Contents <!-- omit from toc -->
 
-## <a name="introduction"></a> Introduction
+- [Introduction](#introduction)
+- [Installation](#installation)
+  - [Debian/Ubuntu Linux](#debianubuntu-linux)
+  - [macOS](#macos)
+  - [Setting Cargo.toml](#setting-cargotoml)
+- [Examples](#examples)
+- [Roadmap](#roadmap)
+
+
+
+## Introduction
 
 MsgPass (Message Passing) is a thin Rust wrapper to MPI. We consider a small subset of MPI functions. This subset will grow as our projects require more functionality. We implement (by hand) C functions that Rust can easily call using the FFI (in the `c_code` directory).
 
 We try to test all functions as much as possible, but test coverage could be better. The tests must be called with `mpiexec`, thus it is easy to use the `run-tests.bash` script.
 
-**Documentation:**
-
-- [![Documentation](https://docs.rs/msgpass/badge.svg)](https://docs.rs/msgpass)
+[![documentation](https://img.shields.io/badge/msgpass-documentation-blue)](https://docs.rs/msgpass)
 
 **Note:** We can communicate strings by converting them to an array of bytes. For instance:
 
@@ -32,9 +34,12 @@ str_to_bytes(&mut bytes, "Hello World 😊");
 comm.broadcast_bytes(0, &mut bytes)?;
 ```
 
-## <a name="installation"></a> Installation on Debian/Ubuntu/Linux
 
-On **Ubuntu/Linux**, install OpenMPI, MPICH, or Intel MPI. For instance,
+## Installation
+
+### Debian/Ubuntu Linux
+
+First, install OpenMPI, MPICH, or Intel MPI. For instance,
 
 ```bash
 sudo apt install libopenmpi-dev
@@ -52,26 +57,27 @@ or
 bash ./zscripts/install-intel-mpi-debian.bash
 ```
 
-For MPICH, the following environment variable is required:
+The use the corresponding `feature`:
 
-```bash
-export MSGPASS_USE_MPICH=1
-```
+* `intel`: use Intel MPI 
+* `mpich`: use MPICH
+* (default): use OpenMPI
 
-For Intel MPI, the following commands are required:
+For Intel MPI, remember to call `setvars.sh` first:
 
 ```bash
 source /opt/intel/oneapi/setvars.sh
-export MSGPASS_USE_INTEL_MPI=1
 ```
 
-## <a name="macos"></a> Installation on macOS
+
+
+### macOS
 
 On **macOS**, install the following packages:
 
 
 ```bash
-brew install llvm@13 open-mpi
+brew install llvm open-mpi
 ```
 
 Also, export the following environment variable:
@@ -80,7 +86,9 @@ Also, export the following environment variable:
 export echo TMPDIR=/tmp
 ```
 
-## <a name="cargo"></a> Setting Cargo.toml
+
+
+### Setting Cargo.toml
 
 [![Crates.io](https://img.shields.io/crates/v/msgpass.svg)](https://crates.io/crates/msgpass)
 
@@ -91,7 +99,16 @@ export echo TMPDIR=/tmp
 msgpass = "*"
 ```
 
-## <a name="examples"></a> Examples
+Or, considering the optional _features_:
+
+```toml
+[dependencies]
+msgpass = { version = "*", features = ["intel"] }
+```
+
+
+
+## Examples
 
 See also:
 
@@ -138,7 +155,9 @@ Running the code above with `mpiexec -np 4 ex_send_receive` (see `run-examples.b
 1: y = [1.0, 2.0, 3.0]
 ```
 
-## <a name="todo"></a> Todo list
+
+
+## Roadmap
 
 - [x] Implement basic functionality
     - [x] Initialize and finalize

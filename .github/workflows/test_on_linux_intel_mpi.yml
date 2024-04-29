@@ -11,5 +11,4 @@ jobs:
       - name: Run tests
         run: |
           source /opt/intel/oneapi/setvars.sh
-          export MSGPASS_USE_INTEL_MPI=1
-          bash run-tests.bash
+          bash run-tests.bash intel
