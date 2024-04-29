@@ -7,7 +7,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install libraries
         run: |
-          brew install llvm@13 open-mpi
+          brew install llvm open-mpi
           echo TMPDIR=/tmp | tee -a $GITHUB_ENV
           env
       - name: Run tests
