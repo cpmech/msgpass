@@ -5,11 +5,16 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install libraries
+      - name: Configure environment
         run: |
-          brew install llvm open-mpi
           echo TMPDIR=/tmp | tee -a $GITHUB_ENV
           env
+      - name: Install LLVM
+        run: |
+          brew install llvm
+      - name: Install OpenMPI
+        run: |
+          brew install open-mpi
       - name: Run tests
         run: |
           bash run-tests.bash
