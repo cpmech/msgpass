@@ -11,6 +11,10 @@ readme = "README.md"
 categories = ["science"]
 keywords = ["parallel", "cluster", "MPI"]
 
+[features]
+intel = []
+mpich = []
+
 [dependencies]
 num-complex = "0.4"
 
