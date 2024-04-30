@@ -17,6 +17,6 @@ jobs:
           brew install open-mpi
       - name: Run tests
         run: |
-          find / -iname "*mpi.so*"
+          find / -iname "*mpi.dylib*"
           bash run-tests.bash
 
