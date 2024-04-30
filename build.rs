@@ -27,6 +27,7 @@ fn get_information() -> (Vec<&'static str>, Vec<&'static str>, Vec<&'static str>
         // inc_dirs
         vec![
             "/usr/lib/x86_64-linux-gnu/openmpi/include/", //
+            "/usr/local/opt/open-mpi/include",            // macOS
         ],
         // lib_dirs
         vec![
