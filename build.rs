@@ -31,6 +31,7 @@ fn get_information() -> (Vec<&'static str>, Vec<&'static str>, Vec<&'static str>
         // lib_dirs
         vec![
             "/usr/lib/x86_64-linux-gnu/openmpi/", //
+            "/usr/local/opt/open-mpi/lib/",       // macOS
         ],
         // libs
         vec![
